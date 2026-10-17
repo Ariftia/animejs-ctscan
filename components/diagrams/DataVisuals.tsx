@@ -1,22 +1,30 @@
 "use client";
 
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
-import { DataTexture, Group, LinearFilter, MeshBasicMaterial, RGBAFormat } from "three";
+import { useEffect, useMemo, useRef } from "react";
+import { DataTexture, Group, LinearFilter, MeshBasicMaterial, Mesh, RGBAFormat, ShaderMaterial } from "three";
+import { ReconstructionVolume } from "./ReconstructionVolume";
+import { ACQUISITION, transmission } from "@/components/scanner/acquisition";
+import { SCENES, rangeProgress } from "@/components/animation/ranges";
 import { useExperience } from "@/components/experience/ExperienceContext";
 
 function ProjectionLines() {
   const angles = useMemo(() => [0, 45, 90, 135, 180], []);
   const group = useRef<Group>(null);
   const materials = useRef<MeshBasicMaterial[]>([]);
+  const bars = useRef<Mesh[]>([]);
   const { motion } = useExperience();
   useFrame(() => {
     if (!group.current) return;
-    const opacity = motion.current.dataAlpha;
+    const opacity = motion.current.dataAlpha * (1 - motion.current.sinogramAlpha) * (1 - motion.current.reconstructionAlpha);
     group.current.visible = opacity > 0.005;
     group.current.scale.setScalar(0.84 + opacity * 0.16);
     materials.current.forEach((material, index) => {
-      material.opacity = opacity * (0.22 + (index % 12) / 18);
+      const view = Math.floor(index / 12);
+      const channel = ((index % 12) / 11) * (ACQUISITION.channels - 1);
+      const signal = -Math.log(transmission(channel, motion.current.scanAngle + view * Math.PI / 4, motion.current.explode));
+      material.opacity = opacity * 0.7;
+      if (bars.current[index]) bars.current[index].scale.y = 0.06 + signal * 0.3;
     });
   });
   return (
@@ -24,8 +32,8 @@ function ProjectionLines() {
       {angles.map((angle, index) => (
         <group key={angle} position={[index * 0.2, (index - 2) * 0.34, 0]}>
           {Array.from({ length: 12 }, (_, cell) => (
-            <mesh key={cell} position={[(cell - 5.5) * 0.075, 0, 0]}>
-              <boxGeometry args={[0.05, 0.2 + Math.sin(cell * 0.75 + index) * 0.12, 0.025]} />
+            <mesh key={cell} ref={(mesh) => { if (mesh) bars.current[index * 12 + cell] = mesh; }} position={[(cell - 5.5) * 0.075, 0, 0]}>
+              <boxGeometry args={[0.05, 1, 0.025]} />
               <meshBasicMaterial ref={(material) => { if (material) materials.current[index * 12 + cell] = material; }} color="#16bcca" transparent opacity={0} depthWrite={false} />
             </mesh>
           ))}
@@ -37,21 +45,19 @@ function ProjectionLines() {
 
 function SinogramPlane() {
   const texture = useMemo(() => {
-    const width = 96;
-    const height = 56;
+    const width = 128;
+    const height = 180;
     const pixels = new Uint8Array(width * height * 4);
     for (let y = 0; y < height; y += 1) {
+      const angle = (y / (height - 1)) * Math.PI * 2;
       for (let x = 0; x < width; x += 1) {
-        const angle = (x / width) * Math.PI * 2;
-        const centerA = height * 0.5 + Math.sin(angle) * height * 0.29;
-        const centerB = height * 0.5 + Math.sin(angle * 1.45 + 1.6) * height * 0.2;
-        const centerC = height * 0.5 + Math.sin(angle * 0.62 - 0.8) * height * 0.36;
-        const distance = Math.min(Math.abs(y - centerA), Math.abs(y - centerB), Math.abs(y - centerC));
-        const signal = Math.exp(-(distance * distance) / 3.4);
+        const channel = (x / (width - 1)) * (ACQUISITION.channels - 1);
+        const attenuation = -Math.log(transmission(channel, angle, 0));
+        const signal = Math.min(1, attenuation / 1.35);
         const index = (y * width + x) * 4;
-        pixels[index] = Math.round(16 + signal * 45);
-        pixels[index + 1] = Math.round(31 + signal * 170);
-        pixels[index + 2] = Math.round(34 + signal * 185);
+        pixels[index] = Math.round(20 + signal * 200);
+        pixels[index + 1] = Math.round(30 + signal * 200);
+        pixels[index + 2] = Math.round(32 + signal * 200);
         pixels[index + 3] = 255;
       }
     }
@@ -61,50 +67,42 @@ function SinogramPlane() {
     next.needsUpdate = true;
     return next;
   }, []);
+  useEffect(() => () => texture.dispose(), [texture]);
   const group = useRef<Group>(null);
-  const material = useRef<MeshBasicMaterial>(null);
-  const { motion } = useExperience();
+  const material = useRef<ShaderMaterial>(null);
+  const uniforms = useMemo(() => ({
+    uMap: { value: texture }, uAlpha: { value: 0 }, uReveal: { value: 0 },
+  }), [texture]);
+  const { motion, progressRef } = useExperience();
   useFrame(() => {
     if (!group.current) return;
-    const opacity = motion.current.sinogramAlpha;
+    const opacity = motion.current.sinogramAlpha * (1 - motion.current.reconstructionAlpha);
     group.current.visible = opacity > 0.005;
-    group.current.scale.setScalar(0.92 + opacity * 0.08);
-    if (material.current) material.current.opacity = opacity * 0.92;
+    if (!material.current) return;
+    material.current.uniforms.uAlpha.value = opacity * 0.94;
+    material.current.uniforms.uReveal.value = rangeProgress(progressRef.current, [SCENES.SINOGRAM[0], SCENES.SINOGRAM[1]]);
   });
   return (
-    <group ref={group} position={[0.35, 0.15, 1.5]} rotation={[-0.08, 0.02, 0]}>
+    <group ref={group} position={[2.05, 0.15, 0.65]}>
       <mesh>
-        <planeGeometry args={[3.15, 2.06]} />
-        <meshBasicMaterial ref={material} map={texture} transparent opacity={0} depthWrite={false} />
-      </mesh>
-    </group>
-  );
-}
-
-function Reconstruction() {
-  const group = useRef<Group>(null);
-  const lines = useRef<MeshBasicMaterial[]>([]);
-  const disc = useRef<MeshBasicMaterial>(null);
-  const { motion } = useExperience();
-  useFrame(() => {
-    if (!group.current) return;
-    const opacity = motion.current.reconstructionAlpha;
-    group.current.visible = opacity > 0.005;
-    group.current.rotation.z += 0.002 * opacity;
-    lines.current.forEach((material) => { material.opacity = opacity * 0.22; });
-    if (disc.current) disc.current.opacity = opacity * 0.14;
-  });
-  return (
-    <group ref={group} position={[0, 0.12, 1.2]}>
-      {Array.from({ length: 14 }, (_, index) => (
-        <mesh key={index} rotation={[0, 0, (index / 14) * Math.PI]}>
-          <planeGeometry args={[4.4, 0.012]} />
-          <meshBasicMaterial ref={(material) => { if (material) lines.current[index] = material; }} color="#31d4df" transparent opacity={0} depthWrite={false} />
-        </mesh>
-      ))}
-      <mesh position={[0, 0, 0.05]}>
-        <circleGeometry args={[1.06, 64]} />
-        <meshBasicMaterial ref={disc} color="#8be3e8" transparent opacity={0} depthWrite={false} />
+        <planeGeometry args={[1.45, 1.9]} />
+        <shaderMaterial
+          ref={material} uniforms={uniforms} transparent depthWrite={false}
+          vertexShader={`varying vec2 vUv;
+            void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`}
+          fragmentShader={`
+            uniform sampler2D uMap;
+            uniform float uAlpha, uReveal;
+            varying vec2 vUv;
+            void main() {
+              float row = 1.0 - vUv.y;
+              vec3 signal = texture2D(uMap, vec2(vUv.x, row)).rgb;
+              float acquired = 1.0 - smoothstep(uReveal, uReveal + 0.008, row);
+              vec3 color = mix(vec3(0.04, 0.075, 0.08), signal, acquired);
+              float cursor = (1.0 - smoothstep(0.002, 0.008, abs(row - uReveal))) * step(uReveal, 0.99);
+              gl_FragColor = vec4(mix(color, vec3(0.2, 0.85, 0.9), cursor), uAlpha);
+            }`}
+        />
       </mesh>
     </group>
   );
@@ -115,7 +113,7 @@ export function DataVisuals() {
     <>
       <ProjectionLines />
       <SinogramPlane />
-      <Reconstruction />
+      <ReconstructionVolume />
     </>
   );
 }

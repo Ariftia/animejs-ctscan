@@ -11,6 +11,7 @@ export type MotionState = {
   explode: number;
   housingAlpha: number;
   ringRotation: number;
+  scanAngle: number;
   beamAlpha: number;
   patientAlpha: number;
   detectorPulse: number;
@@ -33,6 +34,7 @@ export const createMotionState = (): MotionState => ({
   explode: 0,
   housingAlpha: 1,
   ringRotation: 0,
+  scanAngle: 0,
   beamAlpha: 0,
   patientAlpha: 0,
   detectorPulse: 0,

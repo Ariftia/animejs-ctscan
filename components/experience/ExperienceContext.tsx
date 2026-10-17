@@ -10,6 +10,7 @@ type ExperienceContextValue = {
   progressRef: MutableRefObject<number>;
   motion: MutableRefObject<MotionState>;
   activeScene: SceneKey;
+  reducedMotion: boolean;
   selected: string | null;
   setSelected: (id: string | null) => void;
 };
@@ -40,8 +41,8 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
   useExperienceTimeline(progressRef, motion, reducedMotion);
 
   const value = useMemo(
-    () => ({ progressRef, motion, activeScene, selected, setSelected }),
-    [activeScene, selected],
+    () => ({ progressRef, motion, activeScene, selected, setSelected, reducedMotion }),
+    [activeScene, selected, reducedMotion],
   );
 
   return <ExperienceContext.Provider value={value}>{children}</ExperienceContext.Provider>;

@@ -3,7 +3,8 @@
 import { Edges, RoundedBox } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
-import { DoubleSide, Group, MeshBasicMaterial, MeshStandardMaterial, Shape } from "three";
+import { Group, MeshBasicMaterial, MeshStandardMaterial } from "three";
+import { ACQUISITION, transmission } from "./acquisition";
 import { useExperience } from "@/components/experience/ExperienceContext";
 
 const OUTLINE = "#18383b";
@@ -21,17 +22,9 @@ export function HousingHalf({ side, selected }: { side: "left" | "right"; select
         <torusGeometry args={[1.58, 0.43, 22, 72, Math.PI]} />
         <meshStandardMaterial color={selected ? "#d9fbfc" : "#f1f2ee"} roughness={0.27} metalness={0.08} transparent />
       </mesh>
-      <mesh scale={1.003}>
-        <torusGeometry args={[1.58, 0.43, 10, 32, Math.PI]} />
-        <meshBasicMaterial color={OUTLINE} transparent opacity={0.3} wireframe depthWrite={false} />
-      </mesh>
       <mesh position={[0, 0, -0.34]} castShadow receiveShadow>
         <torusGeometry args={[1.58, 0.38, 18, 72, Math.PI]} />
         <meshStandardMaterial color="#dfe3df" roughness={0.34} metalness={0.08} transparent />
-      </mesh>
-      <mesh position={[0, 0, -0.34]} scale={1.003}>
-        <torusGeometry args={[1.58, 0.38, 8, 32, Math.PI]} />
-        <meshBasicMaterial color="#718184" transparent opacity={0.22} wireframe depthWrite={false} />
       </mesh>
       <mesh position={[0, 0, 0.34]}>
         <torusGeometry args={[1.39, 0.035, 10, 72, Math.PI]} />
@@ -123,30 +116,32 @@ export function XRayTube({ selected = false }: { selected?: boolean }) {
 }
 
 export function DetectorArray({ selected = false }: { selected?: boolean }) {
-  const cells = useMemo(() => Array.from({ length: 25 }, (_, index) => index), []);
+  const cells = useMemo(() => Array.from({ length: ACQUISITION.channels }, (_, index) => index), []);
   const materials = useRef<MeshStandardMaterial[]>([]);
   const { motion } = useExperience();
 
-  useFrame((state) => {
-    const pulse = motion.current.detectorPulse;
+  useFrame(() => {
+    const m = motion.current;
+    const acquiring = m.beamAlpha > 0.005;
     materials.current.forEach((material, index) => {
-      const active = pulse > index / cells.length;
-      material.color.set(selected || active ? CYAN : "#6b7a7c");
-      material.emissiveIntensity = active ? 0.35 + Math.sin(state.clock.elapsedTime * 8 - index * 0.3) * 0.16 : 0.02;
+      const measured = transmission(index, m.scanAngle, m.explode);
+      const intensity = 1 + (measured - 1) * Math.min(1, m.patientAlpha / 0.3);
+      material.color.set(selected || acquiring ? CYAN : "#6b7a7c");
+      material.emissiveIntensity = acquiring ? 0.12 + intensity * m.beamAlpha * 0.9 : 0.02;
     });
   });
 
   return (
     <group>
-      <RoundedBox args={[1.22, 0.18, 0.47]} radius={0.06} smoothness={2} position={[0, 0.02, -0.06]}>
+      <RoundedBox args={[2.4, 0.18, 0.47]} radius={0.06} smoothness={2} position={[0, 0.02, -0.06]}>
         <meshStandardMaterial color="#253032" metalness={0.64} roughness={0.3} transparent />
         <PartEdges />
       </RoundedBox>
       {cells.map((index) => {
-        const angle = (index - 12) * 0.034;
+        const angle = (index - (ACQUISITION.channels - 1) / 2) * ACQUISITION.detectorArc;
         return (
-          <mesh key={index} position={[Math.sin(angle) * 1.03, Math.cos(angle) * 0.17, 0.2]} rotation={[0, 0, -angle]} castShadow>
-            <boxGeometry args={[0.043, 0.23, 0.25]} />
+          <mesh key={index} position={[Math.sin(angle) * ACQUISITION.detectorWidthRadius, ACQUISITION.detectorCenterOffset - (1 - Math.cos(angle)) * ACQUISITION.detectorDepthRadius, 0.2]} rotation={[0, 0, -angle]} castShadow>
+            <boxGeometry args={[0.088, 0.23, 0.25]} />
             <meshStandardMaterial ref={(material) => { if (material) materials.current[index] = material; }} color={selected ? CYAN : "#6b7a7c"} emissive={CYAN} emissiveIntensity={0.02} metalness={0.38} roughness={0.36} transparent />
             <PartEdges />
           </mesh>
@@ -179,30 +174,6 @@ export function PatientTable({ selected = false }: { selected?: boolean }) {
   );
 }
 
-export function XRayBeam() {
-  const shape = useMemo(() => {
-    const result = new Shape();
-    result.moveTo(0, 0);
-    result.lineTo(-1.18, -2.72);
-    result.lineTo(1.18, -2.72);
-    result.closePath();
-    return result;
-  }, []);
-  const material = useRef<MeshBasicMaterial>(null);
-  const { motion } = useExperience();
-
-  useFrame(() => {
-    if (material.current) material.current.opacity = motion.current.beamAlpha * 0.23;
-  });
-
-  return (
-    <mesh position={[0, -0.35, 0.08]} userData={{ noSurfaceFade: true }}>
-      <shapeGeometry args={[shape]} />
-      <meshBasicMaterial ref={material} color="#53dce5" transparent opacity={0} side={DoubleSide} depthWrite={false} />
-    </mesh>
-  );
-}
-
 export function PatientPhantom() {
   const group = useRef<Group>(null);
   const outer = useRef<MeshStandardMaterial>(null);
@@ -217,38 +188,15 @@ export function PatientPhantom() {
   });
 
   return (
-    <group ref={group} position={[0, -1.03, 0.18]} rotation={[Math.PI / 2, 0, 0]}>
-      <mesh scale={[0.62, 1.18, 0.4]}>
+    <group ref={group} position={[0, 0, -0.7]} rotation={[Math.PI / 2, 0, 0]}>
+      <mesh scale={[0.85, 0.8, 1.17]}>
         <capsuleGeometry args={[0.47, 1.4, 10, 24]} />
         <meshPhysicalMaterial ref={outer} color="#b8e9eb" transparent opacity={0} transmission={0.38} roughness={0.34} depthWrite={false} />
       </mesh>
-      <mesh scale={[0.38, 0.78, 0.26]}>
+      <mesh scale={[0.35, 0.8, 0.6]}>
         <capsuleGeometry args={[0.42, 1.08, 8, 20]} />
         <meshBasicMaterial ref={inner} color={CYAN} transparent opacity={0} depthWrite={false} />
       </mesh>
-    </group>
-  );
-}
-
-export function CTSliceStack() {
-  const group = useRef<Group>(null);
-  const { motion } = useExperience();
-  useFrame((state) => {
-    if (!group.current) return;
-    const opacity = motion.current.sliceAlpha;
-    group.current.visible = opacity > 0.005;
-    group.current.rotation.z = state.clock.elapsedTime * 0.08;
-    group.current.scale.setScalar(0.85 + opacity * 0.15);
-  });
-
-  return (
-    <group ref={group} position={[0, 0.05, 1.05]} rotation={[Math.PI / 2, 0, 0]} visible={false}>
-      {Array.from({ length: 9 }, (_, index) => (
-        <mesh key={index} position={[0, (index - 4) * 0.055, 0]}>
-          <cylinderGeometry args={[0.86 - index * 0.012, 0.86 - index * 0.012, 0.018, 64]} />
-          <meshPhysicalMaterial color={index === 8 ? "#d6fcff" : "#35cbd5"} emissive="#12aab6" emissiveIntensity={0.16} transparent opacity={0.18 + index * 0.035} roughness={0.22} depthWrite={false} />
-        </mesh>
-      ))}
     </group>
   );
 }

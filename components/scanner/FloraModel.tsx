@@ -1,7 +1,7 @@
 "use client";
 
 import { useGLTF } from "@react-three/drei";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { ColorRepresentation, Group, Material, Mesh, MeshStandardMaterial } from "three";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 
@@ -19,11 +19,14 @@ export function FloraModel({ url, name, color }: FloraModelProps) {
       if (child instanceof Mesh) {
         const materials = Array.isArray(child.material) ? child.material : [child.material];
         const cloned = materials.map((material: Material) => material.clone());
-        if (color) {
-          cloned.forEach((material) => {
-            if (material instanceof MeshStandardMaterial) material.color.set(color);
-          });
-        }
+        cloned.forEach((material) => {
+          if (material instanceof MeshStandardMaterial) {
+            if (color) material.color.set(color);
+            material.roughness = 0.32;
+            material.metalness = 0.12;
+            material.envMapIntensity = 0.8;
+          }
+        });
         child.material = Array.isArray(child.material) ? cloned : cloned[0];
         child.castShadow = false;
         child.receiveShadow = false;
@@ -31,11 +34,15 @@ export function FloraModel({ url, name, color }: FloraModelProps) {
     });
     return next;
   }, [color, gltf.scene]);
+  useEffect(() => () => {
+    scene.traverse((child) => {
+      if (!(child instanceof Mesh)) return;
+      const materials = Array.isArray(child.material) ? child.material : [child.material];
+      materials.forEach((material) => material.dispose());
+    });
+  }, [scene]);
   return <primitive object={scene} name={name} />;
 }
 
 useGLTF.preload("/models/ct-gantry-housing.glb");
-useGLTF.preload("/models/ct-rotation-ring.glb");
-useGLTF.preload("/models/ct-xray-tube.glb");
-useGLTF.preload("/models/ct-detector-array.glb");
 useGLTF.preload("/models/ct-patient-table.glb");

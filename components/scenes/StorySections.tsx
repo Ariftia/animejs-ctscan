@@ -8,13 +8,12 @@ const scenes = [
   { id: "intro", number: "02", title: <>ONE MACHINE.<br />THREE SYSTEMS.</>, body: "A gantry, a moving table, and a rotating imaging system work as one.", meta: "GANTRY · TABLE · ROTATION" },
   { id: "explode", number: "03", title: <>UNDER<br />THE SHELL</>, body: "The outer housing separates to reveal the components carrying the scan.", meta: "ASSEMBLY / EXPLODED" },
   { id: "gantry", number: "04", title: <>THE ROTATING<br />GANTRY</>, body: "Source and detector orbit together, collecting measurements from every angle.", meta: "360° ACQUISITION" },
-  { id: "xray", number: "05", title: <>X-RAY<br />SOURCE</>, body: "A rotating X-ray tube produces radiation from multiple angles around the patient.", meta: "SOURCE / 120 kVp" },
+  { id: "xray", number: "05", title: <>X-RAY<br />SOURCE</>, body: "A rotating X-ray tube produces radiation from multiple angles around the patient.", meta: "X-RAYS VISUALIZED · ROTATION SLOWED" },
   { id: "attenuation", number: "06", title: <>THROUGH<br />THE BODY</>, body: "Tissues attenuate the beam differently. Dense structures absorb more; air absorbs less.", meta: "I = I₀ e^(−μx)" },
   { id: "detector", number: "07", title: <>MEASURED<br />IN LIGHT</>, body: "The detector records how much radiation reaches each individual element.", meta: "DETECTOR ARRAY" },
   { id: "projection", number: "08", title: <>ONE ANGLE.<br />ONE PROJECTION.</>, body: "Each rotation produces hundreds of views: narrow records of attenuation across the body.", meta: "0° · 45° · 90° · 135° · 180°" },
-  { id: "sinogram", number: "09", title: <>DATA<br />IN MOTION</>, body: "Stack the projections by angle and anatomy traces sinusoidal paths through the data.", meta: "PROJECTION SPACE" },
-  { id: "reconstruction", number: "10", title: <>FROM SIGNAL<br />TO SLICE</>, body: "Reconstruction combines the measurements until internal structure resolves into a cross-section.", meta: "BACKPROJECT · FILTER · RESOLVE" },
-  { id: "reassembly", number: "11", title: <>THE SYSTEM<br />RETURNS</>, body: "Data disappears. Components align. The scanner becomes whole again.", meta: "REASSEMBLING" },
+  { id: "sinogram", number: "09", title: <>DATA<br />IN MOTION</>, body: "Each row records the detector readings at one angle. Stack the rows to build a sinogram.", meta: "DETECTOR POSITION × ACQUISITION ANGLE" },
+  { id: "reconstruction", number: "10", title: <>FROM SIGNAL<br />TO SLICE</>, body: "Reconstruction combines the measurements until internal structure resolves into a cross-section.", meta: "AXIAL SLICES · SIMULATED ANATOMY" },
 ] as const;
 
 export function StorySections() {
@@ -30,6 +29,7 @@ export function StorySections() {
           </div>
         </section>
       ))}
+      <section id="reassembly" className="story-section" aria-label="Scanner reassembly" />
       <ExplorerSection />
     </main>
   );

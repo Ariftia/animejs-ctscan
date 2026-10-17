@@ -3,9 +3,9 @@
 import { useProgress } from "@react-three/drei";
 
 export function LoadingScreen() {
-  const { progress, total } = useProgress();
-  const visible = total === 0 || progress < 99.5;
-  const displayedProgress = total > 0 ? progress : 74;
+  const { active, progress, total } = useProgress();
+  const visible = active || (total > 0 && progress < 99.5);
+  const displayedProgress = total > 0 ? progress : 100;
   return (
     <div className={visible ? "loader active" : "loader"} aria-hidden={!visible}>
       <div className="loader-mark">CT</div>

@@ -7,7 +7,7 @@ import { Vector3 } from "three";
 import { useExperience } from "./ExperienceContext";
 
 export function CTCamera() {
-  const { camera } = useThree();
+  const { camera, size } = useThree();
   const { motion, activeScene } = useExperience();
   const target = useMemo(() => new Vector3(), []);
   const monitor = useRef({ frames: 0, last: 0 });
@@ -15,7 +15,8 @@ export function CTCamera() {
   useFrame((state) => {
     const m = motion.current;
     if (activeScene !== "EXPLORER") {
-      camera.position.set(m.cameraX, m.cameraY, m.cameraZ);
+      const framing = Math.max(1, 0.85 / (size.width / size.height));
+      camera.position.set(m.cameraX * framing, m.cameraY * framing, m.cameraZ * framing);
       target.set(m.lookX, 0, 0);
       camera.lookAt(target);
     }
