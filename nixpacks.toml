@@ -1,0 +1,3 @@
+[phases.build]
+# BuildKit cache mounts must point to directories, not tsconfig.tsbuildinfo.
+cacheDirectories = [".next/cache", "node_modules/.cache"]
