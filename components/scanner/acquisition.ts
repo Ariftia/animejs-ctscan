@@ -10,7 +10,7 @@ export const ACQUISITION = {
   detectorWidthRadius: 2.8,
   detectorDepthRadius: 2.8,
   detectorCenterOffset: 0.25,
-  radiansPerSecond: 0.65,
+  radiansPerSecond: 0.2,
 } as const;
 
 export const PHANTOM = [

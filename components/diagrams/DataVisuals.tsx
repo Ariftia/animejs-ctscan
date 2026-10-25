@@ -1,8 +1,9 @@
 "use client";
 
 import { useFrame } from "@react-three/fiber";
+import { Html } from "@react-three/drei";
 import { useEffect, useMemo, useRef } from "react";
-import { DataTexture, Group, LinearFilter, MeshBasicMaterial, Mesh, RGBAFormat, ShaderMaterial } from "three";
+import { DataTexture, Group, LinearFilter, MeshBasicMaterial, RGBAFormat, ShaderMaterial } from "three";
 import { ReconstructionVolume } from "./ReconstructionVolume";
 import { ACQUISITION, transmission } from "@/components/scanner/acquisition";
 import { SCENES, rangeProgress } from "@/components/animation/ranges";
@@ -12,33 +13,45 @@ function ProjectionLines() {
   const angles = useMemo(() => [0, 45, 90, 135, 180], []);
   const group = useRef<Group>(null);
   const materials = useRef<MeshBasicMaterial[]>([]);
-  const bars = useRef<Mesh[]>([]);
+  const annotations = useRef<(HTMLSpanElement | null)[]>([]);
+  const profiles = useMemo(() => angles.map((angle) => Array.from({ length: 12 }, (_, channel) => {
+    const detector = (channel / 11) * (ACQUISITION.channels - 1);
+    return 0.02 - Math.log(transmission(detector, angle * Math.PI / 180, 0)) * 0.24;
+  })), [angles]);
   const { motion } = useExperience();
   useFrame(() => {
     if (!group.current) return;
     const opacity = motion.current.dataAlpha * (1 - motion.current.sinogramAlpha) * (1 - motion.current.reconstructionAlpha);
+    const reveal = Math.min(1, opacity * 4);
     group.current.visible = opacity > 0.005;
-    group.current.scale.setScalar(0.84 + opacity * 0.16);
-    materials.current.forEach((material, index) => {
-      const view = Math.floor(index / 12);
-      const channel = ((index % 12) / 11) * (ACQUISITION.channels - 1);
-      const signal = -Math.log(transmission(channel, motion.current.scanAngle + view * Math.PI / 4, motion.current.explode));
-      material.opacity = opacity * 0.7;
-      if (bars.current[index]) bars.current[index].scale.y = 0.06 + signal * 0.3;
+    materials.current.forEach((material) => { material.opacity = reveal * 0.95; });
+    annotations.current.forEach((label) => {
+      if (!label) return;
+      label.style.opacity = String(reveal);
+      label.setAttribute("aria-hidden", String(opacity < 0.005));
     });
   });
   return (
-    <group ref={group} position={[2.8, 0.2, -0.4]}>
+    <group ref={group} position={[3.1, 0.1, 0.65]}>
+      <Html position={[0, 1.3, 0]} center style={{ pointerEvents: "none" }}>
+        <span ref={(node) => { annotations.current[5] = node; }} className="projection-label">ATTENUATION</span>
+      </Html>
       {angles.map((angle, index) => (
-        <group key={angle} position={[index * 0.2, (index - 2) * 0.34, 0]}>
+        <group key={angle} position={[0, (2 - index) * 0.42, 0]}>
+          <Html position={[-0.76, 0.06, 0]} center style={{ pointerEvents: "none" }}>
+            <span ref={(node) => { annotations.current[index] = node; }} className="projection-label">{angle}°</span>
+          </Html>
           {Array.from({ length: 12 }, (_, cell) => (
-            <mesh key={cell} ref={(mesh) => { if (mesh) bars.current[index * 12 + cell] = mesh; }} position={[(cell - 5.5) * 0.075, 0, 0]}>
-              <boxGeometry args={[0.05, 1, 0.025]} />
-              <meshBasicMaterial ref={(material) => { if (material) materials.current[index * 12 + cell] = material; }} color="#16bcca" transparent opacity={0} depthWrite={false} />
+            <mesh key={cell} position={[(cell - 5.5) * 0.085, profiles[index][cell] / 2, 0]}>
+              <boxGeometry args={[0.055, profiles[index][cell], 0.025]} />
+              <meshBasicMaterial ref={(material) => { if (material) materials.current[index * 12 + cell] = material; }} color="#13818a" transparent opacity={0} depthWrite={false} />
             </mesh>
           ))}
         </group>
       ))}
+      <Html position={[0, -1.15, 0]} center style={{ pointerEvents: "none" }}>
+        <span ref={(node) => { annotations.current[6] = node; }} className="projection-label">DETECTOR POSITION →</span>
+      </Html>
     </group>
   );
 }

@@ -13,7 +13,8 @@ This task refines scanner placement, text spacing, and responsive framing while 
 
 - Scanner and story text have distinct visual space on desktop and mobile.
 - Long headings remain visible within the viewport.
-- Scene status and choreography remain consistent during forward and reverse scrolling; camera lanes and mobile canvas sizing transition continuously across scene boundaries.
+- Keep the story camera and scanner position steady throughout scrolling; retain only restrained explanatory movement. Mobile canvas sizing remains continuous and manual orbit remains available in the explorer.
+- Label sampled projection angles and detector position so attenuation profiles are understandable.
 - The final explorer exposes the selected component and allows model interaction.
 - One persistent WebGL canvas, normalized scroll progress, and reduced-motion support remain intact.
 - Required verification follows [AGENTS.md](AGENTS.md).

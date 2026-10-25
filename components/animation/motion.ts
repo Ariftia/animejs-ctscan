@@ -22,13 +22,13 @@ export type MotionState = {
 };
 
 export const createMotionState = (): MotionState => ({
-  cameraX: 4.8,
-  cameraY: 2.5,
-  cameraZ: 7.8,
-  lookX: 0,
+  cameraX: 3.7,
+  cameraY: 2,
+  cameraZ: 7.5,
+  lookX: 0.3,
   machineX: 0.8,
   machineY: 0,
-  machineRotY: 0.02,
+  machineRotY: 0.08,
   outlineAlpha: 0.56,
   surfaceAlpha: 0.96,
   explode: 0,

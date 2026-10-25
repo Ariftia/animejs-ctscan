@@ -1,6 +1,5 @@
 import { chromium } from "playwright";
 import assert from "node:assert/strict";
-import "./animation-qa.mjs";
 
 const browser = await chromium.launch({ headless: true });
 const errors = [];
@@ -35,6 +34,7 @@ async function inspectPage(page, label) {
 const desktop = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
 const desktopInfo = await inspectPage(desktop, "desktop");
 await capture(desktop, "/tmp/ct-hero-qa.png");
+const fixedCamera = await desktop.locator("[data-camera]").count() ? await desktop.locator("[data-camera]").textContent() : null;
 
 // These boundaries differ from equal twelfths and must update in both directions.
 for (const [progress, scene] of [[0.05, "02"], [0.04, "01"], [0.05, "02"]]) {
@@ -51,6 +51,11 @@ await desktop.waitForTimeout(900);
 const midScene = await desktop.locator(".nav-status span").first().textContent();
 await capture(desktop, "/tmp/ct-xray-qa.png");
 
+await desktop.evaluate(() => window.scrollTo(0, document.getElementById("projection").offsetTop));
+await desktop.waitForFunction(() => Array.from(document.querySelectorAll(".projection-label")).every((label) => Number(getComputedStyle(label).opacity) > 0.5));
+assert.deepEqual(await desktop.locator(".projection-label").allTextContents(), ["ATTENUATION", "0°", "45°", "90°", "135°", "180°", "DETECTOR POSITION →"]);
+await capture(desktop, "/tmp/ct-projection-qa.png");
+
 await desktop.evaluate(() => window.scrollTo(0, document.getElementById("sinogram").offsetTop));
 await desktop.waitForTimeout(900);
 await capture(desktop, "/tmp/ct-sinogram-qa.png");
@@ -58,6 +63,7 @@ await capture(desktop, "/tmp/ct-sinogram-qa.png");
 await desktop.evaluate(() => window.scrollTo(0, document.getElementById("reconstruction").offsetTop));
 await desktop.waitForTimeout(900);
 await capture(desktop, "/tmp/ct-reconstruction-qa.png");
+if (fixedCamera) assert.equal(await desktop.locator("[data-camera]").textContent(), fixedCamera, "Scrolling must not pan, zoom, or orbit the story camera");
 
 await desktop.evaluate(() => window.scrollTo(0, 0));
 await desktop.waitForTimeout(700);
@@ -77,6 +83,14 @@ const mobileInfo = await inspectPage(mobile, "mobile");
 await mobile.locator(".loader").waitFor({ state: "hidden", timeout: 20000 }).catch(() => {});
 mobileInfo.loaderVisible = await mobile.locator(".loader").evaluate((element) => getComputedStyle(element).visibility);
 await capture(mobile, "/tmp/ct-mobile-qa.png");
+await mobile.evaluate(() => window.scrollTo(0, document.getElementById("projection").offsetTop));
+await mobile.waitForFunction(() => Array.from(document.querySelectorAll(".projection-label")).every((label) => Number(getComputedStyle(label).opacity) > 0.5));
+const clippedLabels = await mobile.locator(".projection-label").evaluateAll((labels) => labels.filter((label) => {
+  const bounds = label.getBoundingClientRect();
+  return bounds.left < 0 || bounds.right > innerWidth;
+}).map((label) => label.textContent));
+assert.deepEqual(clippedLabels, [], "Projection labels must fit the mobile viewport");
+await capture(mobile, "/tmp/ct-projection-mobile-qa.png");
 const framingHeights = [];
 for (const progress of [0.87, 0.90, 0.93, 0.95, 0.93, 0.90, 0.87]) {
   await mobile.evaluate((value) => window.scrollTo(0, (document.documentElement.scrollHeight - innerHeight) * value), progress);

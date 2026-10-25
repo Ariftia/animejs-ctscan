@@ -20,7 +20,7 @@ export function StorySections() {
   return (
     <main id="top" className="story">
       {scenes.map((scene, index) => (
-        <section key={scene.id} id={scene.id} className={`story-section ${index % 3 === 1 ? "align-right" : ""}`}>
+        <section key={scene.id} id={scene.id} className="story-section">
           <div className="story-copy">
             <div className="scene-number"><span>{scene.number}</span><i /></div>
             {index === 0 ? <h1>{scene.title}</h1> : <h2>{scene.title}</h2>}

@@ -10,7 +10,7 @@ Install the pinned dependencies with `npm ci`, then run `npm run dev` and open `
 
 Run `npm run lint`, `npm run typecheck`, and `npm run build`. Start the application before running `node scripts/qa.mjs`; `QA_BASE_URL` overrides the default `http://127.0.0.1:3000`. Playwright requires Chromium (`npx playwright install chromium`). `npm run start` serves a production build.
 
-`node scripts/animation-qa.mjs` checks camera continuity and reverse-scroll framing without a browser; the full QA script includes it and checks mobile framing transitions.
+The QA script checks a stationary story camera in development and reversible mobile framing transitions, along with selection and responsive layout.
 
 For visual changes, inspect forward/reverse scrolling, resizing, mobile layout, reduced motion, and browser console output. Contribution and asset conventions are in [AGENTS.md](AGENTS.md).
 

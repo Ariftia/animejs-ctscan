@@ -10,7 +10,7 @@ The root route renders `CTExperience`: one persistent React Three Fiber canvas b
 
 ## Incumbent visual identity
 
-Warm paper (`#f3f1eb`), dark ink (`#111514`), teal/cyan instrumentation, condensed uppercase display headings, sans-serif body copy, and small monospace annotations. Alternate desktop copy alignment; stack model above copy on mobile. Refinement preserves this visual identity and educational content.
+Warm paper (`#f3f1eb`), dark ink (`#111514`), teal/cyan instrumentation, condensed uppercase display headings, sans-serif body copy, and small monospace annotations. Keep desktop copy on the left and the scanner on the right; stack model above copy on mobile. Refinement preserves this visual identity and educational content.
 
 ## Constraints and verification
 
@@ -20,7 +20,7 @@ No persistence or migrations are involved. No new asset downloads are added to t
 
 ## Placement refinement
 
-The perspective camera reserves a left or right visual lane opposite the current story copy. `cameraOffsetAt` blends between those lanes around centralized scene boundaries using normalized progress, so forward and reverse scrolling follow the same continuous path. Framing pulls back for exploded geometry and data displays, and the timeline recenters data displays through `lookX`. Reassembly completes the explorer pose before orbit controls take over; entering or resizing the explorer initializes its camera once. Camera, scanner, and CSS use the same inclusive 800px mobile breakpoint. The mobile canvas shrinks continuously during reassembly into a compact explorer view below navigation, so the model clears its heading and component details without a size jump at the scene boundary.
+The story camera uses one fixed position, target, scale, and machine angle throughout scrolling. All desktop copy stays on the left and the model remains on the right; camera pans, automatic zooms, and lane swaps are removed. Responsive framing still adapts to viewport size. Explorer orbit controls remain user-driven. Camera, scanner, and CSS use the same inclusive 800px mobile breakpoint. The mobile canvas shrinks continuously during reassembly into a compact explorer view below navigation. Explosion distance and scroll-driven rotation use a 0.55 multiplier (0.18 with reduced motion); live acquisition rotation is 0.2 radians per second.
 
 Scene notifications use `sceneAt` from the centralized ranges, matching the timeline rather than equal twelfths. The existing condensed display and sans-serif font stack is intentionally preserved; the mechanical design scan's two font-style warnings refer to this incumbent typography, outside the placement scope.
 
@@ -31,3 +31,7 @@ The assembled table group sits at Y=-1.04. With the existing native table geomet
 ## Reconstruction presentation
 
 Reconstruction crossfades the scanner hardware into one 512px synthetic axial slice. The former seven nearly overlapping opaque planes were visually redundant and looked like duplicated frames. Stable shader uniforms, disabled depth writes for translucent surfaces, and hidden fully faded hardware keep the transition clear. Shell, ring, and bed visibility also follows their opacity rather than fixed scroll cutoffs; acquisition-beam shader materials retain ownership of their own opacity/depth state. Texture resources are disposed on unmount; no external image assets or dependencies are added.
+
+## Projection readouts
+
+The projection chart shows attenuation profiles at fixed 0°, 45°, 90°, 135°, and 180° acquisition angles. Rows share a left edge and baseline; bar height encodes negative-log transmission across detector positions. Dark teal bars and angle/axis annotations replace the unlabeled, staggered moving marks. Profiles are calculated once and remain steady; only their visibility follows the scroll timeline. DOM annotations use the existing Drei Html component, local fonts, and the same visibility envelope as the bars.

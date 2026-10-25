@@ -4,12 +4,11 @@ import { OrbitControls } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import { PerspectiveCamera, Vector3 } from "three";
-import { cameraOffsetAt } from "@/components/animation/ranges";
 import { useExperience } from "./ExperienceContext";
 
 export function CTCamera() {
   const { camera, size } = useThree();
-  const { motion, activeScene, progressRef } = useExperience();
+  const { motion, activeScene } = useExperience();
   const target = useMemo(() => new Vector3(), []);
   const monitor = useRef({ frames: 0, last: 0 });
   const explorerReady = useRef(false);
@@ -25,10 +24,10 @@ export function CTCamera() {
     target.set(machineX + m.lookX, m.machineY - 0.25, 0.4);
     if (camera instanceof PerspectiveCamera) {
       // Reserve a stable visual lane without changing the model's world coordinates.
-      camera.setViewOffset(size.width, size.height, mobile ? 0 : size.width * cameraOffsetAt(progressRef.current), 0, size.width, size.height);
+      camera.setViewOffset(size.width, size.height, mobile ? 0 : size.width * -0.21, 0, size.width, size.height);
     }
     if (activeScene !== "EXPLORER" || !explorerReady.current) {
-      const framing = Math.max(1, (mobile ? 0.95 : 1.6) / (size.width / size.height)) * (1 + m.explode * 0.7 + m.dataAlpha * 0.35);
+      const framing = Math.max(1, (mobile ? 0.95 : 1.6) / (size.width / size.height)) * 1.2;
       camera.position.set(machineX + m.lookX + m.cameraX * framing, m.cameraY * framing, m.cameraZ * framing);
       camera.lookAt(target);
       explorerReady.current = true;
@@ -54,7 +53,7 @@ export function CTCamera() {
       enablePan={false}
       minDistance={4.5}
       maxDistance={10}
-      target={[mobile ? motion.current.machineX * 0.15 : motion.current.machineX, motion.current.machineY - 0.25, 0.4]}
+      target={[(mobile ? motion.current.machineX * 0.15 : motion.current.machineX) + motion.current.lookX, motion.current.machineY - 0.25, 0.4]}
       makeDefault
     />
   );
