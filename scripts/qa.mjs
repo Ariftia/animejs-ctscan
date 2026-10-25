@@ -33,6 +33,7 @@ async function inspectPage(page, label) {
 
 const desktop = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
 const desktopInfo = await inspectPage(desktop, "desktop");
+assert.equal(await desktop.locator(".debug-panel").isVisible(), false, "Debug controls must be hidden on the normal page");
 await capture(desktop, "/tmp/ct-hero-qa.png");
 const fixedCamera = await desktop.locator("[data-camera]").count() ? await desktop.locator("[data-camera]").textContent() : null;
 

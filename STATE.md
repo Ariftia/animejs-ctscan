@@ -1,9 +1,11 @@
 # Project state
 
 Updated: 2026-10-25 (Asia/Jakarta).
-Current task: Reduce excessive scanner motion.
+Current task: Hide preview diagnostics.
 
 ## Current behavior
+
+The diagnostics panel is hidden by default and is available only with `?debug=1` during development. The Next.js development badge is disabled. Lint, TypeScript, production build, and browser QA passed; the normal preview capture shows neither the panel nor the Next.js badge.
 
 The camera, scanner position, and machine angle stay fixed throughout the story; all desktop copy remains on the left. Automatic camera pans and zooms are removed. Explosion/scroll-driven rotation are reduced 45%, and live acquisition rotation slows from 0.65 to 0.2 radians per second. Mobile canvas size interpolates through reassembly in both directions. The projection chart now labels fixed 0°/45°/90°/135°/180° attenuation profiles with detector position and holds their values steady. Reconstruction uses one sharper synthetic slice and crossfades the hardware away; transparent surfaces no longer write occluding depth.
 
@@ -25,4 +27,4 @@ See [PRD.md](PRD.md), [DESIGN.md](DESIGN.md), [README.md](README.md), and [WORKL
 
 ## Next step
 
-All required checks passed for the calmer camera and clarified chart. The development preview is running on port 3000.
+All required checks passed with preview diagnostics hidden by default. The development preview is running on port 3000.

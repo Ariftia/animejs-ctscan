@@ -6,6 +6,8 @@ A scroll-driven educational CT scanner experience built with Next.js 15, React 1
 
 Install the pinned dependencies with `npm ci`, then run `npm run dev` and open `http://localhost:3000`. No application credentials are required. The project uses Node.js; a supported version policy has not been established.
 
+Development diagnostics are hidden by default. Append `?debug=1` to the root URL to show the panel during development. The panel is omitted in production, and the Next.js development badge is disabled.
+
 ## Verification
 
 Run `npm run lint`, `npm run typecheck`, and `npm run build`. Start the application before running `node scripts/qa.mjs`; `QA_BASE_URL` overrides the default `http://127.0.0.1:3000`. Playwright requires Chromium (`npx playwright install chromium`). `npm run start` serves a production build.

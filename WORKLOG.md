@@ -41,3 +41,11 @@
 - Cleanup: Remove the unused camera lane interpolation, its dedicated test, and obsolete alternating-layout styles. Extend browser QA to compare the story camera pose before and after scrolling in development.
 - Verification: Lint, TypeScript, production build, and complete Playwright QA passed. The development camera pose remained identical between hero and reconstruction. Projection labels matched all five sampled angles and fit the mobile viewport; desktop/mobile captures, reverse scrolling, reduced motion, and explorer selection passed with no captured browser errors. The dev preview remains on port 3000.
 - Limits: Chromium only; physical devices and other browser engines remain unverified. No new dependencies or assets.
+
+## 2026-10-25 (Asia/Jakarta) — Hide preview diagnostics
+
+- Model: Not available.
+- Request: Hide the progress/scene/camera/FPS panel shown in the screenshot.
+- Change: Hide the diagnostics panel by default; development diagnostics can be explicitly opened with `?debug=1`. Production still omits the panel entirely. Disable the Next.js development indicator through its supported configuration.
+- Verification: Lint, TypeScript, production build, and complete browser QA passed with no captured browser errors. Visually confirmed the normal preview contains neither the panel nor the Next.js badge. Added a browser assertion that the normal page has no visible debug panel; hidden readouts preserve the existing stationary-camera regression check.
+- Limits: Browser verification uses Chromium.
