@@ -49,3 +49,14 @@
 - Change: Hide the diagnostics panel by default; development diagnostics can be explicitly opened with `?debug=1`. Production still omits the panel entirely. Disable the Next.js development indicator through its supported configuration.
 - Verification: Lint, TypeScript, production build, and complete browser QA passed with no captured browser errors. Visually confirmed the normal preview contains neither the panel nor the Next.js badge. Added a browser assertion that the normal page has no visible debug panel; hidden readouts preserve the existing stationary-camera regression check.
 - Limits: Browser verification uses Chromium.
+
+## 2026-10-26 (Asia/Jakarta) — Enrich the signal-to-image story
+
+- Request: Enhance content and animation creatively.
+- Content: Expand the chapter explanations from beam generation through attenuation, detector conversion, projection profiles, sinograms, and reconstructed cross-sections. Add a closing reassembly chapter before the explorer. Identify the anatomy/reconstruction as illustrative.
+- Motion: Add a four-stage SVG signal path that follows normalized progress using the existing scroll loop and centralized ranges. Reduced motion uses discrete stage fills. Resolve the existing 15 synthetic slices progressively and gather their spacing into a compact volume; remove the capsule/block overlay and hide unresolved/background pixels instead of drawing dark occluding planes. Reduced motion fixes slice spacing/orientation and omits the traveling reveal.
+- Accessibility: Announce selected component details through a polite live region. Preserve the fixed story camera, one canvas, existing explorer controls, and reduced-motion support.
+- Verification: Lint, TypeScript, and production build passed. Expanded production Playwright QA passed at http://127.0.0.1:3001: forward/reverse signal progression, reduced-motion stages, scene changes, projection labels, mobile framing/clearance, component selection, responsive headings at 320–1920px, one canvas, and no captured console/request errors. Inspected desktop/mobile captures plus a completed volume capture; a dark unreconstructed-region artifact found during visual inspection was corrected before the final suite passed.
+- Environment: Browser plugin unavailable; used the repository Playwright workflow. Chromium and the preview server needed execution outside the process sandbox. Production preview remains on port 3001. No added dependencies or external assets; existing 15-texture generation remains, while two overlay meshes including a physical transmission material were removed.
+- Documentation: Updated README, PRD, DESIGN, and STATE. Preserve the pre-existing tsconfig.tsbuildinfo modification outside this task's commit.
+- Limits: Headless Chromium only; physical touch devices and other browser engines remain unverified. No push or deployment.

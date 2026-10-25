@@ -2,7 +2,7 @@
 
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
-import { DataTexture, DoubleSide, Group, LinearFilter, RGBAFormat, ShaderMaterial } from "three";
+import { DataTexture, DoubleSide, Group, Mesh, LinearFilter, RGBAFormat, ShaderMaterial } from "three";
 import { useExperience } from "@/components/experience/ExperienceContext";
 import { PHANTOM } from "@/components/scanner/acquisition";
 
@@ -66,10 +66,10 @@ export function createSliceTexture(slice: number, size = 512) {
 const SLICE_COUNT = 15;
 
 export function ReconstructionVolume() {
-  const { motion } = useExperience();
+  const { motion, reducedMotion } = useExperience();
   const group = useRef<Group>(null);
   const materials = useRef<ShaderMaterial[]>([]);
-  const phantomRef = useRef<Group>(null);
+  const slices = useRef<Mesh[]>([]);
   const textures = useMemo(() => Array.from({ length: SLICE_COUNT }, (_, i) => createSliceTexture(i * 0.5)), []);
   const uniformsList = useMemo(() => textures.map((texture) => ({
     uMap: { value: texture },
@@ -85,59 +85,31 @@ export function ReconstructionVolume() {
       group.current.visible = reveal > 0.005;
       // Position volume directly inside the gantry scanner bore right where the patient sits!
       group.current.position.set(0, 0.04, 0.15 - reveal * 0.1);
-      group.current.rotation.y = -0.15 + (1 - reveal) * 0.12 + reveal * 0.32;
-      group.current.rotation.x = 0.04 + reveal * 0.14;
-    }
-    if (phantomRef.current) {
-      // 3D volumetric ghost body model resolves as slices complete stacking
-      phantomRef.current.visible = reveal > 0.4;
-      phantomRef.current.position.z = 0;
-      phantomRef.current.rotation.y = reveal * 0.08;
+      group.current.rotation.y = reducedMotion ? 0.17 : -0.15 + reveal * 0.32;
+      group.current.rotation.x = reducedMotion ? 0.18 : 0.04 + reveal * 0.14;
     }
     materials.current.forEach((material, index) => {
       if (!material) return;
       // Progressive stacking: scan slices sweep and resolve one by one into a solid 3D object
-      const sliceDelay = (index / SLICE_COUNT) * 0.45;
+      const sliceDelay = reducedMotion ? 0 : (index / SLICE_COUNT) * 0.45;
       const sliceReveal = Math.min(1, Math.max(0, (reveal - sliceDelay) / (1 - sliceDelay)));
       material.uniforms.uAlpha.value = sliceReveal * 0.88;
-      material.uniforms.uResolve.value = sliceReveal;
+      material.uniforms.uResolve.value = reducedMotion ? 1 : sliceReveal;
+      const slice = slices.current[index];
+      if (slice) {
+        const spread = index - Math.floor(SLICE_COUNT / 2);
+        slice.position.z = spread * (0.085 + (reducedMotion ? 0 : (1 - sliceReveal) * 0.06));
+      }
     });
   });
 
   return (
     <group ref={group} position={[0, 0.04, 0.15]} rotation={[0.04, -0.15, 0]} visible={false}>
-      {/* Real 3D Anatomical Object Mesh fused with slice stack */}
-      <group ref={phantomRef} visible={false}>
-        <mesh position={[0, -0.05, 0]} scale={[0.88, 0.82, 1.25]}>
-          <capsuleGeometry args={[0.46, 1.35, 12, 28]} />
-          <meshPhysicalMaterial
-            color="#28d7e6"
-            transparent
-            opacity={0.16}
-            roughness={0.25}
-            transmission={0.65}
-            depthWrite={false}
-          />
-        </mesh>
-        {/* Core Spine & Lungs volumetric 3D silhouettes */}
-        <mesh position={[0, -0.22, 0]} scale={[0.18, 0.22, 1.2]}>
-          <boxGeometry args={[0.6, 0.5, 1.2]} />
-          <meshStandardMaterial
-            color="#ecf6f7"
-            emissive="#15abb8"
-            emissiveIntensity={0.35}
-            transparent
-            opacity={0.28}
-            depthWrite={false}
-          />
-        </mesh>
-      </group>
-
-      {/* High-density 15-slice true volumetric CT slice stack */}
+      {/* Synthetic cross-sections gather into a compact volume as they resolve. */}
       {Array.from({ length: SLICE_COUNT }, (_, index) => {
         const spread = index - Math.floor(SLICE_COUNT / 2);
         return (
-          <mesh key={index} position={[0, 0, spread * 0.085]}>
+          <mesh key={index} ref={(mesh) => { if (mesh) slices.current[index] = mesh; }} position={[0, 0, spread * 0.085]}>
             <planeGeometry args={[1.7, 2.05]} />
             <shaderMaterial
               ref={(mat) => { if (mat) materials.current[index] = mat; }}
@@ -158,9 +130,9 @@ export function ReconstructionVolume() {
                   vec3 color = mix(vec3(0.02), soft, acquired);
                   float sweep = (1.0 - smoothstep(0.001, 0.004, abs(row - uResolve))) * (1.0 - step(0.98, uResolve));
                   color = mix(color, vec3(0.15, 0.88, 0.95), sweep * 0.75);
-                  // Remove harsh black border so stack seamlessly blends into full 3D body volume
-                  float alphaMask = smoothstep(0.02, 0.08, length(sharp));
-                  gl_FragColor = vec4(color, uAlpha * alphaMask);
+                  // Exclude the synthetic background while retaining the low-density lungs.
+                  float alphaMask = smoothstep(0.04, 0.08, sharp.r);
+                  gl_FragColor = vec4(color, uAlpha * alphaMask * acquired);
                 }`}
             />
           </mesh>

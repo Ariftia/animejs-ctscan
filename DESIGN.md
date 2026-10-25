@@ -1,6 +1,6 @@
 # Inside a CT scanner — Design
 
-Updated: 2026-10-25 (Asia/Jakarta). Requirements: [PRD.md](PRD.md).
+Updated: 2026-10-26 (Asia/Jakarta). Requirements: [PRD.md](PRD.md).
 
 ## Observed system
 
@@ -30,8 +30,14 @@ The assembled table group sits at Y=-1.04. With the existing native table geomet
 
 ## Reconstruction presentation
 
-Reconstruction crossfades the scanner hardware into one 512px synthetic axial slice. The former seven nearly overlapping opaque planes were visually redundant and looked like duplicated frames. Stable shader uniforms, disabled depth writes for translucent surfaces, and hidden fully faded hardware keep the transition clear. Shell, ring, and bed visibility also follows their opacity rather than fixed scroll cutoffs; acquisition-beam shader materials retain ownership of their own opacity/depth state. Texture resources are disposed on unmount; no external image assets or dependencies are added.
+Reconstruction crossfades scanner hardware into a stack of 15 synthetic 512px axial cross-sections. Stable shader uniforms, disabled depth writes for translucent surfaces, and hidden fully faded hardware keep the transition clear. Shell, ring, and bed visibility follows opacity; acquisition-beam shader materials retain ownership of their own opacity/depth state. Texture resources are disposed on unmount. The signal journey enhancement below describes the slice animation and reduced-motion treatment.
 
 ## Projection readouts
 
 The projection chart shows attenuation profiles at fixed 0°, 45°, 90°, 135°, and 180° acquisition angles. Rows share a left edge and baseline; bar height encodes negative-log transmission across detector positions. Dark teal bars and angle/axis annotations replace the unlabeled, staggered moving marks. Profiles are calculated once and remain steady; only their visibility follows the scroll timeline. DOM annotations use the existing Drei Html component, local fonts, and the same visibility envelope as the bars.
+
+## Signal journey and reconstruction enhancement
+
+The chapter copy explains what changes between a beam, a detector measurement, a projection, a sinogram, and reconstructed anatomy. Reassembly now closes the narrative before the explorer. Acquisition chapters include a compact four-stage SVG signal path: its stroke follows the existing normalized scroll loop between the centralized X-ray and reconstruction ranges. The current stage follows the chapter; reduced motion uses discrete stage fills. No extra animation loop or dependency is introduced.
+
+The current reconstruction implementation uses 15 synthetic 512px cross-sections. The slices progressively resolve and close their spacing into a compact volume; the unrelated capsule/block overlay is removed. Background pixels are excluded using scalar intensity so translucent black rectangles do not obscure the anatomy. Reduced motion fixes the stack orientation and spacing, removes the traveling slice sweep, and retains the fade. The synthetic texture generation and texture disposal remain local, with no new model or image assets. Explorer selection details use a polite live region.

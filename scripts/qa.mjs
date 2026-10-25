@@ -35,6 +35,20 @@ const desktop = await browser.newPage({ viewport: { width: 1440, height: 900 }, 
 const desktopInfo = await inspectPage(desktop, "desktop");
 assert.equal(await desktop.locator(".debug-panel").isVisible(), false, "Debug controls must be hidden on the normal page");
 await capture(desktop, "/tmp/ct-hero-qa.png");
+// The signal path must retrace scroll progress and identify the current handoff.
+const signalFills = [];
+for (const [progress, section, step] of [[0.38, "xray", "X-ray beam"], [0.65, "projection", "Measurement"], [0.74, "sinogram", "Sinogram"], [0.83, "reconstruction", "Volume"], [0.65, "projection", "Measurement"]]) {
+  await desktop.evaluate((value) => window.scrollTo(0, (document.documentElement.scrollHeight - innerHeight) * value), progress);
+  await desktop.waitForFunction((value) => Math.abs(Number(getComputedStyle(document.documentElement).getPropertyValue("--experience-progress")) - value) < 0.001, progress);
+  const figure = desktop.locator(`#${section} .signal-journey`);
+  await figure.locator("[aria-current=step]").filter({ hasText: step }).waitFor();
+  signalFills.push(await figure.evaluate((node) => Number(getComputedStyle(node).getPropertyValue("--signal-fill"))));
+}
+assert.ok(signalFills[0] < signalFills[1] && signalFills[1] < signalFills[2] && signalFills[2] < signalFills[3], "Signal path must advance from beam to volume");
+assert.ok(Math.abs(signalFills[1] - signalFills[4]) < 0.005, "Signal path must restore its fill on reverse scroll");
+assert.ok((await desktop.locator("#reassembly p").textContent()).includes("reconstruction software"), "Reassembly must complete the educational story");
+await desktop.evaluate(() => window.scrollTo(0, 0));
+await desktop.waitForTimeout(300);
 const fixedCamera = await desktop.locator("[data-camera]").count() ? await desktop.locator("[data-camera]").textContent() : null;
 
 // These boundaries differ from equal twelfths and must update in both directions.
@@ -128,6 +142,11 @@ await reduced.locator(".loader").waitFor({ state: "hidden", timeout: 20000 }).ca
 reducedInfo.loaderVisible = await reduced.locator(".loader").evaluate((element) => getComputedStyle(element).visibility);
 await reduced.evaluate(() => window.scrollTo(0, (document.documentElement.scrollHeight - innerHeight) * 0.25));
 await reduced.waitForTimeout(500);
+await reduced.evaluate(() => window.scrollTo(0, (document.documentElement.scrollHeight - innerHeight) * 0.65));
+await reduced.locator("#projection [aria-current=step]").filter({ hasText: "Measurement" }).waitFor();
+await reduced.waitForTimeout(200);
+const reducedFill = await reduced.locator("#projection .signal-journey").evaluate((node) => Number(getComputedStyle(node).getPropertyValue("--signal-fill")));
+assert.ok(Math.abs(reducedFill - 1 / 3) < 0.001, "Reduced motion uses discrete signal stages instead of a traveling stroke");
 const reducedScene = await reduced.locator(".nav-status span").first().textContent();
 
 console.log(JSON.stringify({ desktopInfo, midScene, reverseScene, explorerScene, selection, mobileInfo, reducedInfo, reducedScene, errors }, null, 2));
