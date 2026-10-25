@@ -1,6 +1,6 @@
 "use client";
 
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import { useEffect, useMemo, useRef } from "react";
 import { DataTexture, Group, LinearFilter, MeshBasicMaterial, RGBAFormat, ShaderMaterial } from "three";
@@ -10,6 +10,8 @@ import { SCENES, rangeProgress } from "@/components/animation/ranges";
 import { useExperience } from "@/components/experience/ExperienceContext";
 
 function ProjectionLines() {
+  const { size } = useThree();
+  const mobile = size.width <= 800;
   const angles = useMemo(() => [0, 45, 90, 135, 180], []);
   const group = useRef<Group>(null);
   const materials = useRef<MeshBasicMaterial[]>([]);
@@ -32,7 +34,7 @@ function ProjectionLines() {
     });
   });
   return (
-    <group ref={group} position={[3.1, 0.1, 0.65]}>
+    <group ref={group} position={[mobile ? 2.3 : 3.1, 0.1, 0.65]}>
       <Html position={[0, 1.3, 0]} center style={{ pointerEvents: "none" }}>
         <span ref={(node) => { annotations.current[5] = node; }} className="projection-label">ATTENUATION</span>
       </Html>
@@ -89,11 +91,13 @@ function SinogramPlane() {
   const { motion, progressRef } = useExperience();
   useFrame(() => {
     if (!group.current) return;
-    const opacity = motion.current.sinogramAlpha * (1 - motion.current.reconstructionAlpha);
+    const opacity = motion.current.sinogramAlpha * (1 - motion.current.reconstructionAlpha * 0.85);
     group.current.visible = opacity > 0.005;
     if (!material.current) return;
-    material.current.uniforms.uAlpha.value = opacity * 0.94;
-    material.current.uniforms.uReveal.value = rangeProgress(progressRef.current, [SCENES.SINOGRAM[0], SCENES.SINOGRAM[1]]);
+    material.current.uniforms.uAlpha.value = opacity * 0.96;
+    const progress = rangeProgress(progressRef.current, [SCENES.SINOGRAM[0], SCENES.SINOGRAM[1]]);
+    // Eased reveal curve for tactile data scanning feel
+    material.current.uniforms.uReveal.value = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
   });
   return (
     <group ref={group} position={[2.05, 0.15, 0.65]}>

@@ -117,7 +117,7 @@ export function CTScanner() {
 
     // Match the gantry floor while keeping the deck inside the bore liner.
     table.current.position.y = -1.04 - m.explode * 0.55;
-    table.current.position.z = 1.38 + m.explode * 1.15;
+    table.current.position.z = 1.38 - m.tableFeed * 0.42 + m.explode * 1.15;
 
     const hardwareAlpha = 1 - m.reconstructionAlpha;
     const progress = progressRef.current;
@@ -137,7 +137,7 @@ export function CTScanner() {
     });
     materials.current.outlines.forEach((material) => {
       material.transparent = true;
-      material.opacity = m.outlineAlpha * 0.24 * hardwareAlpha;
+      material.opacity = m.outlineAlpha * 0.45 * hardwareAlpha;
       material.depthWrite = false;
     });
     const shellReveal = Math.min(1, m.explode * 4);

@@ -57,7 +57,7 @@ export function ProductHousing({ selected }: { selected: boolean }) {
     <group>
       <mesh position={[0, 0, -0.72]} castShadow receiveShadow>
         <extrudeGeometry args={[enclosure, { depth: 1.25, bevelEnabled: true, bevelSegments: 5, steps: 1, bevelSize: 0.12, bevelThickness: 0.12, curveSegments: 64 }]} />
-        <meshStandardMaterial color={selected ? "#d4eeee" : "#e9edeb"} metalness={0.08} roughness={0.32} />
+        <meshStandardMaterial color={selected ? "#d4eeee" : "#e0e5e3"} metalness={0.16} roughness={0.28} />
       </mesh>
       <mesh position={[0, 0, 0.66]}>
         <torusGeometry args={[1.29, 0.07, 16, 96]} />

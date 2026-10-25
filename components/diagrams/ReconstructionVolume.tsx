@@ -72,7 +72,11 @@ export function ReconstructionVolume() {
   useEffect(() => () => texture.dispose(), [texture]);
   useFrame(() => {
     const reveal = motion.current.sliceAlpha;
-    if (group.current) group.current.visible = reveal > 0.005;
+    if (group.current) {
+      group.current.visible = reveal > 0.005;
+      group.current.position.z = 1.35 - reveal * 0.18;
+      group.current.rotation.y = -0.15 + (1 - reveal) * 0.12;
+    }
     if (!material.current) return;
     material.current.uniforms.uAlpha.value = reveal;
     material.current.uniforms.uResolve.value = reveal;

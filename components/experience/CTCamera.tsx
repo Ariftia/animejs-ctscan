@@ -20,15 +20,15 @@ export function CTCamera() {
 
   useFrame((state) => {
     const m = motion.current;
-    const machineX = mobile ? m.machineX * 0.15 : m.machineX;
-    target.set(machineX + m.lookX, m.machineY - 0.25, 0.4);
+    const machineX = mobile ? 0 : m.machineX;
+    target.set(machineX + (mobile ? 0 : m.lookX), m.machineY - (mobile ? 0 : 0.25), 0.4);
     if (camera instanceof PerspectiveCamera) {
       // Reserve a stable visual lane without changing the model's world coordinates.
       camera.setViewOffset(size.width, size.height, mobile ? 0 : size.width * -0.21, 0, size.width, size.height);
     }
     if (activeScene !== "EXPLORER" || !explorerReady.current) {
-      const framing = Math.max(1, (mobile ? 0.95 : 1.6) / (size.width / size.height)) * 1.2;
-      camera.position.set(machineX + m.lookX + m.cameraX * framing, m.cameraY * framing, m.cameraZ * framing);
+      const framing = Math.max(1, (mobile ? 0.8 : 1.6) / (size.width / size.height)) * 1.2;
+      camera.position.set(machineX + (mobile ? 0 : m.lookX) + m.cameraX * framing, (m.cameraY + (mobile ? 0.25 : 0)) * framing, m.cameraZ * framing);
       camera.lookAt(target);
       explorerReady.current = true;
     }
@@ -53,7 +53,7 @@ export function CTCamera() {
       enablePan={false}
       minDistance={4.5}
       maxDistance={10}
-      target={[(mobile ? motion.current.machineX * 0.15 : motion.current.machineX) + motion.current.lookX, motion.current.machineY - 0.25, 0.4]}
+      target={[(mobile ? 0 : motion.current.machineX) + (mobile ? 0 : motion.current.lookX), motion.current.machineY - (mobile ? 0 : 0.25), 0.4]}
       makeDefault
     />
   );

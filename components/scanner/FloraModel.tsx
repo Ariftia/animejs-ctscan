@@ -22,9 +22,10 @@ export function FloraModel({ url, name, color }: FloraModelProps) {
         cloned.forEach((material) => {
           if (material instanceof MeshStandardMaterial) {
             if (color) material.color.set(color);
-            material.roughness = 0.32;
-            material.metalness = 0.12;
-            material.envMapIntensity = 0.8;
+            else material.color.set("#dce2df");
+            material.roughness = 0.28;
+            material.metalness = 0.18;
+            material.envMapIntensity = 1.05;
           }
         });
         child.material = Array.isArray(child.material) ? cloned : cloned[0];

@@ -15,6 +15,7 @@ export type MotionState = {
   beamAlpha: number;
   patientAlpha: number;
   detectorPulse: number;
+  tableFeed: number;
   dataAlpha: number;
   sinogramAlpha: number;
   reconstructionAlpha: number;
@@ -38,6 +39,7 @@ export const createMotionState = (): MotionState => ({
   beamAlpha: 0,
   patientAlpha: 0,
   detectorPulse: 0,
+  tableFeed: 0,
   dataAlpha: 0,
   sinogramAlpha: 0,
   reconstructionAlpha: 0,

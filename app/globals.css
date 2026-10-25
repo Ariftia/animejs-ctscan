@@ -177,20 +177,44 @@ button, input { font: inherit; }
 .webgl-fallback { padding: 30vh 8vw; max-width: 620px; font-size: 22px; }
 
 @media (max-width: 800px) {
-  .navigation { padding: 22px 20px; }
+  .navigation { padding: 20px 24px; }
   .progress-rail { display: none; }
-  .story-section { align-items: flex-end; padding: 24vh 20px 9vh; }
-  .story-copy, .explorer-copy { width: 100%; }
-  .story-copy h1, .story-copy h2 { font-size: clamp(32px, 10vw, 58px); }
-  .story-copy p { max-width: 90%; font-size: 16px; }
-  .canvas-stage {
-    top: calc(64px * var(--explorer-framing, 0));
-    height: calc(48svh - 33svh * var(--explorer-framing, 0));
+  .story-section { align-items: flex-end; justify-content: flex-start; padding: 20vh 32px 64px; }
+  .story-copy {
+    width: min(300px, 78vw);
+    border-radius: 0;
+    padding: 0;
+    margin-bottom: 8px;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
-  .story-copy { background: rgb(243 241 235 / 96%); box-shadow: 0 0 20px 16px rgb(243 241 235 / 96%); }
-  .debug-panel { display: none; }
-  .nav-kicker, .engineering-labels, .stage-caption { display: none; }
-  .explorer-section { min-height: 120svh; }
+  .explorer-copy {
+    width: 100%;
+    border-radius: 0;
+    padding: 0;
+    margin-bottom: 8px;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .scene-number { margin-bottom: 10px; font-size: 11px; }
+  .scene-number i { width: 32px; }
+  .story-copy h1, .story-copy h2 { font-size: clamp(20px, 5.8vw, 28px); margin-bottom: 8px; line-height: 1.02; }
+  .story-copy p { max-width: 100%; font-size: 12.5px; line-height: 1.45; margin-bottom: 10px; }
+  .story-copy > small { font-size: 8.5px; letter-spacing: .14em; }
+  .component-list button { padding: 12px 0; touch-action: manipulation; font-size: 12px; }
+  .component-detail { margin-top: 14px; min-height: 80px; }
+  .component-detail strong { font-size: 15px; }
+  .component-detail p { font-size: 12px; }
+  .nav-kicker, .engineering-labels, .stage-caption, .debug-panel { display: none !important; }
+  .explorer-section { min-height: 125svh; padding-top: 320px; }
+  .canvas-stage {
+    top: calc(56px * var(--explorer-framing, 0));
+    height: calc(100svh - 72svh * var(--explorer-framing, 0));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
