@@ -194,8 +194,10 @@ button, input { font: inherit; }
   .align-right .story-copy p { margin-left: 0; }
   .story-copy h1, .story-copy h2 { font-size: clamp(32px, 10vw, 58px); }
   .story-copy p { max-width: 90%; font-size: 16px; }
-  .canvas-stage { height: 48svh; }
-  .canvas-stage.explorer-stage { top: 64px; height: 15svh; }
+  .canvas-stage {
+    top: calc(64px * var(--explorer-framing, 0));
+    height: calc(48svh - 33svh * var(--explorer-framing, 0));
+  }
   .story-copy { background: rgb(243 241 235 / 96%); box-shadow: 0 0 20px 16px rgb(243 241 235 / 96%); }
   .debug-panel { display: none; }
   .nav-kicker, .engineering-labels, .stage-caption { display: none; }

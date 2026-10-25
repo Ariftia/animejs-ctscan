@@ -17,6 +17,7 @@ import { AcquisitionBeam } from "@/components/scanner/AcquisitionBeam";
 import { ACQUISITION } from "@/components/scanner/acquisition";
 import { ProductHousing, ProductTable } from "@/components/scanner/ProductExterior";
 import { DataVisuals } from "@/components/diagrams/DataVisuals";
+import { rangeProgress, SCENES } from "@/components/animation/ranges";
 
 type FadeMaterial = Material & { opacity: number; transparent: boolean };
 
@@ -52,7 +53,7 @@ function collectMaterials(root: Object3D) {
 
 function setObjectOpacity(root: Object3D, opacity: number) {
   root.traverse((object) => {
-    if (!(object instanceof Mesh)) return;
+    if (!(object instanceof Mesh) || object.userData.noSurfaceFade) return;
     const next = Array.isArray(object.material) ? object.material : [object.material];
     next.forEach((material) => {
       const fade = material as FadeMaterial;
@@ -118,37 +119,44 @@ export function CTScanner() {
     table.current.position.y = -1.04 - m.explode * 0.55;
     table.current.position.z = 1.38 + m.explode * 1.15;
 
+    const hardwareAlpha = 1 - m.reconstructionAlpha;
+    const progress = progressRef.current;
+    const ringAlpha = rangeProgress(progress, SCENES.INTRO);
+    const tableAlpha = 1 - rangeProgress(progress, SCENES.GANTRY) + rangeProgress(progress, SCENES.REASSEMBLY);
+    if (assembly.current) assembly.current.visible = hardwareAlpha > 0.005;
+
     materials.current.proceduralSurfaces.forEach((material) => {
       material.transparent = true;
-      material.opacity = m.surfaceAlpha;
-      material.depthWrite = true;
+      material.opacity = m.surfaceAlpha * hardwareAlpha;
+      material.depthWrite = material.opacity > 0.9;
     });
     materials.current.floraSurfaces.forEach((material) => {
       material.transparent = true;
-      material.opacity = m.surfaceAlpha;
+      material.opacity = m.surfaceAlpha * hardwareAlpha;
+      material.depthWrite = material.opacity > 0.9;
     });
     materials.current.outlines.forEach((material) => {
       material.transparent = true;
-      material.opacity = m.outlineAlpha * 0.24;
+      material.opacity = m.outlineAlpha * 0.24 * hardwareAlpha;
+      material.depthWrite = false;
     });
     const shellReveal = Math.min(1, m.explode * 4);
-    setObjectOpacity(floraHousing.current, m.surfaceAlpha * m.housingAlpha * (1 - shellReveal));
+    setObjectOpacity(floraHousing.current, m.surfaceAlpha * m.housingAlpha * (1 - shellReveal) * hardwareAlpha);
     [housingLeft.current, housingRight.current, housingBase.current, housingCrown.current].forEach((part) => {
-      setObjectOpacity(part, m.surfaceAlpha * m.housingAlpha * shellReveal);
+      setObjectOpacity(part, m.surfaceAlpha * m.housingAlpha * shellReveal * hardwareAlpha);
     });
+    setObjectOpacity(ring.current, m.surfaceAlpha * hardwareAlpha * ringAlpha);
+    setObjectOpacity(table.current, m.surfaceAlpha * hardwareAlpha * tableAlpha);
 
     const revealingInternal = activeScene === "EXPLORER" && ["rotation", "source", "detector"].includes(selected ?? "");
-    const progress = progressRef.current;
-    const housingInStory = progress < 0.31 || progress > 0.86;
-    housingLeft.current.visible = housingInStory && shellReveal > 0.001 && !revealingInternal;
-    housingRight.current.visible = housingInStory && shellReveal > 0.001 && !revealingInternal;
-    housingBase.current.visible = housingInStory && shellReveal > 0.001 && !revealingInternal;
-    housingCrown.current.visible = housingInStory && shellReveal > 0.001 && !revealingInternal;
-    const showFloraHousing = (progress < 0.17 || progress > 0.86) && !revealingInternal;
-    floraHousing.current.visible = showFloraHousing;
-    floraHousing.current.scale.setScalar(showFloraHousing ? 1 : 0.0001);
-    ring.current.visible = progress >= 0.1 || revealingInternal;
-    table.current.visible = progress < 0.3 || progress > 0.85;
+    const showShell = m.housingAlpha * shellReveal * hardwareAlpha > 0.005 && !revealingInternal;
+    housingLeft.current.visible = showShell;
+    housingRight.current.visible = showShell;
+    housingBase.current.visible = showShell;
+    housingCrown.current.visible = showShell;
+    floraHousing.current.visible = m.housingAlpha * (1 - shellReveal) * hardwareAlpha > 0.005 && !revealingInternal;
+    ring.current.visible = ringAlpha > 0.005 || revealingInternal;
+    table.current.visible = tableAlpha > 0.005;
   }, -1);
 
   const explorer = activeScene === "EXPLORER";

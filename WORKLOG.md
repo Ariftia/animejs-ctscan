@@ -21,3 +21,13 @@
 - Verification: Lint, TypeScript, production build, and the complete Playwright QA script passed with no captured browser errors. The updated hero capture shows the bed entering the opening with its head pad visible; forward/reverse scenes, explorer selection, mobile, resize, and reduced-motion checks passed.
 - Preview: Development server started on 0.0.0.0:3000; HTTP 200 confirmed. Side-panel browser opening queued. No port-forwarding tool is exposed, so a device-side tunnel is unverified.
 - Remaining limits: Chromium only; physical devices and other engines unverified.
+
+## 2026-10-25 (Asia/Jakarta) — Fix scrolling discontinuities
+
+- Model: Not available.
+- Request: Fix the CT scanner glitching during scroll and polish reconstruction.
+- Root cause: Camera framing switched between left/right lanes immediately on active-scene changes. The mobile canvas also changed height immediately at the explorer boundary. These discrete updates caused visible jumps despite continuous timeline values. Shell, ring, and table visibility also used hard progress cutoffs.
+- Change: Added a smooth, progress-derived camera offset using centralized scene ranges. Mobile canvas height/top now interpolate through reassembly without replacing the canvas. Shell, ring, and table now fade through centralized scene ranges and are hidden only when nearly transparent. Transparent scanner surfaces stop writing depth while faded; scanner hardware crossfades out during reconstruction. Replaced seven overlapping opaque slice planes with one sharper 512px synthetic axial image, stable shader uniforms, and a matching caption.
+- Regression checks: Added camera continuity checks at every scene boundary and 10,001 forward/reverse progress samples, plus browser assertions that mobile framing shrinks monotonically and retraces its path in reverse. Existing selection, single-canvas, responsiveness, and reduced-motion checks remain.
+- Verification: Camera continuity self-check, lint, TypeScript, production build, and the expanded Playwright QA suite passed with no captured console/request errors. Browser inspection verified progressive mobile canvas heights of approximately 387/295/203/142/127px and the same values on reverse scroll, plus a clean reconstruction capture. The development preview was restarted on port 3000 after the build.
+- Limits: Headless Chromium; no physical touch-device or other browser-engine verification. No new dependencies or external assets.

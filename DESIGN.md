@@ -20,10 +20,14 @@ No persistence or migrations are involved. No new asset downloads are added to t
 
 ## Placement refinement
 
-The perspective camera reserves a left or right visual lane opposite the current story copy. Framing pulls back for exploded geometry and data displays, and the timeline recenters data displays through `lookX`. Reassembly completes the explorer pose before orbit controls take over; entering or resizing the explorer initializes its camera once. Camera, scanner, and CSS use the same inclusive 800px mobile breakpoint. The mobile explorer uses a compact canvas below the navigation so the model clears its heading and component details.
+The perspective camera reserves a left or right visual lane opposite the current story copy. `cameraOffsetAt` blends between those lanes around centralized scene boundaries using normalized progress, so forward and reverse scrolling follow the same continuous path. Framing pulls back for exploded geometry and data displays, and the timeline recenters data displays through `lookX`. Reassembly completes the explorer pose before orbit controls take over; entering or resizing the explorer initializes its camera once. Camera, scanner, and CSS use the same inclusive 800px mobile breakpoint. The mobile canvas shrinks continuously during reassembly into a compact explorer view below navigation, so the model clears its heading and component details without a size jump at the scene boundary.
 
 Scene notifications use `sceneAt` from the centralized ranges, matching the timeline rather than equal twelfths. The existing condensed display and sans-serif font stack is intentionally preserved; the mechanical design scan's two font-style warnings refer to this incumbent typography, outside the placement scope.
 
 ## Bed alignment
 
 The assembled table group sits at Y=-1.04. With the existing native table geometry, its pedestal floor nearly matches the gantry base (0.0075 model units difference), and the tabletop's lower outer corner clears the bore liner (radius 1.1870 versus 1.19). The existing exploded offset is applied from this assembled height; both the initial and animated transforms use it.
+
+## Reconstruction presentation
+
+Reconstruction crossfades the scanner hardware into one 512px synthetic axial slice. The former seven nearly overlapping opaque planes were visually redundant and looked like duplicated frames. Stable shader uniforms, disabled depth writes for translucent surfaces, and hidden fully faded hardware keep the transition clear. Shell, ring, and bed visibility also follows their opacity rather than fixed scroll cutoffs; acquisition-beam shader materials retain ownership of their own opacity/depth state. Texture resources are disposed on unmount; no external image assets or dependencies are added.

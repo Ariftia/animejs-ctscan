@@ -1,5 +1,6 @@
 import { chromium } from "playwright";
 import assert from "node:assert/strict";
+import "./animation-qa.mjs";
 
 const browser = await chromium.launch({ headless: true });
 const errors = [];
@@ -76,6 +77,16 @@ const mobileInfo = await inspectPage(mobile, "mobile");
 await mobile.locator(".loader").waitFor({ state: "hidden", timeout: 20000 }).catch(() => {});
 mobileInfo.loaderVisible = await mobile.locator(".loader").evaluate((element) => getComputedStyle(element).visibility);
 await capture(mobile, "/tmp/ct-mobile-qa.png");
+const framingHeights = [];
+for (const progress of [0.87, 0.90, 0.93, 0.95, 0.93, 0.90, 0.87]) {
+  await mobile.evaluate((value) => window.scrollTo(0, (document.documentElement.scrollHeight - innerHeight) * value), progress);
+  await mobile.waitForFunction((value) => Math.abs(Number(getComputedStyle(document.documentElement).getPropertyValue("--experience-progress")) - value) < 0.001, progress);
+  framingHeights.push((await mobile.locator(".canvas-stage").boundingBox()).height);
+}
+assert.ok(framingHeights[0] > framingHeights[1] && framingHeights[1] > framingHeights[2] && framingHeights[2] > framingHeights[3], "Mobile framing must shrink continuously before the explorer boundary");
+for (let index = 0; index < 3; index += 1) {
+  assert.ok(Math.abs(framingHeights[index] - framingHeights[6 - index]) < 2, "Reverse scroll must restore mobile framing");
+}
 await mobile.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
 await mobile.locator(".nav-status span").first().filter({ hasText: /^12$/ }).waitFor();
 await mobile.getByRole("button", { name: "Detector array" }).click();

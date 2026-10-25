@@ -4,17 +4,16 @@ import { OrbitControls } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import { PerspectiveCamera, Vector3 } from "three";
-import { SCENE_ORDER } from "@/components/animation/ranges";
+import { cameraOffsetAt } from "@/components/animation/ranges";
 import { useExperience } from "./ExperienceContext";
 
 export function CTCamera() {
   const { camera, size } = useThree();
-  const { motion, activeScene } = useExperience();
+  const { motion, activeScene, progressRef } = useExperience();
   const target = useMemo(() => new Vector3(), []);
   const monitor = useRef({ frames: 0, last: 0 });
   const explorerReady = useRef(false);
   const mobile = size.width <= 800;
-  const copyOnRight = SCENE_ORDER.indexOf(activeScene) % 3 === 1;
 
   useEffect(() => {
     explorerReady.current = false;
@@ -26,7 +25,7 @@ export function CTCamera() {
     target.set(machineX + m.lookX, m.machineY - 0.25, 0.4);
     if (camera instanceof PerspectiveCamera) {
       // Reserve a stable visual lane without changing the model's world coordinates.
-      camera.setViewOffset(size.width, size.height, mobile ? 0 : size.width * (copyOnRight ? 0.21 : -0.21), 0, size.width, size.height);
+      camera.setViewOffset(size.width, size.height, mobile ? 0 : size.width * cameraOffsetAt(progressRef.current), 0, size.width, size.height);
     }
     if (activeScene !== "EXPLORER" || !explorerReady.current) {
       const framing = Math.max(1, (mobile ? 0.95 : 1.6) / (size.width / size.height)) * (1 + m.explode * 0.7 + m.dataAlpha * 0.35);
