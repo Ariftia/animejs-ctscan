@@ -98,8 +98,26 @@ await desktop.waitForTimeout(1200);
 const explorerScene = await desktop.locator(".nav-status span").first().textContent();
 await desktop.getByRole("button", { name: "X-ray source" }).click();
 await desktop.waitForTimeout(400);
-const selection = await desktop.locator(".component-detail strong").textContent();
+const selection = (await desktop.locator(".component-list button[aria-expanded=true]").textContent()).trim();
+assert.equal(await desktop.getByRole("region", { name: "X-ray source", exact: true }).isVisible(), true);
 await capture(desktop, "/tmp/ct-explorer-qa.png");
+await desktop.waitForTimeout(1300);
+await desktop.mouse.click(1030, 440);
+await desktop.waitForFunction(() => document.querySelector("#component-source").getAttribute("aria-expanded") === "false");
+assert.equal(await desktop.locator(".component-detail:visible").count(), 0, "Hidden scanner geometry must not intercept clicks on the isolated source");
+for (const label of ["Gantry housing", "Rotation system", "Detector array", "Patient table"]) {
+  const button = desktop.getByRole("button", { name: label, exact: true });
+  await button.click();
+  assert.equal(await button.getAttribute("aria-expanded"), "true");
+  assert.equal(await desktop.locator(".component-detail:visible").count(), 1, "Only the selected explanation should be expanded");
+  const detail = desktop.getByRole("region", { name: label, exact: true });
+  assert.equal(await detail.locator("p").count(), 2);
+}
+const tableButton = desktop.getByRole("button", { name: "Patient table", exact: true });
+await tableButton.focus();
+await tableButton.press("Enter");
+assert.equal(await tableButton.getAttribute("aria-expanded"), "false");
+assert.equal(await desktop.locator(".component-detail:visible").count(), 0, "Closing a row should collapse all explanation details");
 await desktop.close();
 
 const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
@@ -135,7 +153,8 @@ const explorerStyle = await mobile.locator(".explorer-copy").evaluate((node) => 
 assert.equal(explorerStyle.background, "rgba(0, 0, 0, 0)", "Explorer overlay must be transparent");
 assert.equal(explorerStyle.pointerEvents, "none", "Empty overlay space must allow model interaction");
 assert.deepEqual(await mobile.locator(".canvas-stage").boundingBox(), framingBounds[0], "Entering the explorer must not shrink or reposition the canvas");
-assert.equal(await mobile.locator(".component-detail strong").textContent(), "Detector array");
+assert.equal(await mobile.getByRole("button", { name: "Detector array", exact: true }).getAttribute("aria-expanded"), "true");
+assert.equal(await mobile.getByRole("region", { name: "Detector array", exact: true }).isVisible(), true);
 await capture(mobile, "/tmp/ct-mobile-explorer-qa.png");
 const explorerScroll = await mobile.evaluate(() => scrollY);
 await mobile.locator("#explorer h2").hover();
@@ -160,6 +179,10 @@ reducedInfo.loaderVisible = await reduced.locator(".loader").evaluate((element) 
 await reduced.evaluate(() => window.scrollTo(0, (document.documentElement.scrollHeight - innerHeight) * 0.25));
 await reduced.waitForTimeout(500);
 const reducedScene = await reduced.locator(".nav-status span").first().textContent();
+await reduced.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+await reduced.getByRole("button", { name: "X-ray source", exact: true }).click();
+assert.equal(await reduced.getByRole("region", { name: "X-ray source", exact: true }).isVisible(), true);
+await capture(reduced, "/tmp/ct-reduced-focus-qa.png");
 
 console.log(JSON.stringify({ desktopInfo, midScene, reverseScene, explorerScene, selection, mobileInfo, reducedInfo, reducedScene, errors }, null, 2));
 await browser.close();

@@ -44,30 +44,35 @@ export function StorySections() {
 
 function ExplorerSection() {
   const { selected, setSelected } = useExperience();
-  const selectedComponent = CT_COMPONENTS.find((component) => component.id === selected);
   return (
     <section id="explorer" className="story-section explorer-section">
       <div className="story-copy explorer-copy">
         <div className="scene-number"><span>12</span><i /></div>
         <h2>EXPLORE THE<br />SCANNER</h2>
-        <p>Drag to rotate. Scroll to zoom. Select a component to isolate its role.</p>
+        <p>Drag to rotate. Scroll to zoom. Select a component to zoom in and expand its explanation.</p>
         <div className="component-list" role="list" aria-label="CT scanner components">
           {CT_COMPONENTS.map((component) => (
-            <button
-              key={component.id}
-              type="button"
-              className={selected === component.id ? "active" : ""}
-              aria-pressed={selected === component.id}
-              onClick={() => setSelected(selected === component.id ? null : component.id)}
-            >
-              <span>{component.label}</span><b>↗</b>
-            </button>
+            <div key={component.id} className="component-row" role="listitem">
+              <button
+                id={`component-${component.id}`}
+                type="button"
+                className={selected === component.id ? "active" : ""}
+                aria-expanded={selected === component.id}
+                aria-controls={`detail-${component.id}`}
+                onClick={() => setSelected(selected === component.id ? null : component.id)}
+              >
+                <span>{component.label}</span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M3 8H13" stroke="currentColor" strokeWidth="1.5" />
+                  {selected !== component.id && <path d="M8 3V13" stroke="currentColor" strokeWidth="1.5" />}
+                </svg>
+              </button>
+              <div id={`detail-${component.id}`} className="component-detail" role="region" aria-labelledby={`component-${component.id}`} hidden={selected !== component.id}>
+                <p>{component.description}</p>
+                <p>{component.explanation}</p>
+              </div>
+            </div>
           ))}
-        </div>
-        <div aria-live="polite" aria-atomic="true" className={selectedComponent ? "component-detail active" : "component-detail"}>
-          <small>SELECTED COMPONENT</small>
-          <strong>{selectedComponent?.label ?? "Select a component"}</strong>
-          <p>{selectedComponent?.description ?? "Choose a system from the list or directly on the model."}</p>
         </div>
       </div>
     </section>

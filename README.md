@@ -12,7 +12,7 @@ Development diagnostics are hidden by default. Append `?debug=1` to the root URL
 
 Run `npm run lint`, `npm run typecheck`, and `npm run build`. Start the application before running `node scripts/qa.mjs`; `QA_BASE_URL` overrides the default `http://127.0.0.1:3000`. Playwright requires Chromium (`npx playwright install chromium`). `npm run start` serves a production build.
 
-The QA script checks a stationary story camera in development, fixed mobile canvas bounds through explorer entry, transparent explorer surfaces, component selection, responsive layout, reduced motion, and shared phantom slice geometry/tissue contrast.
+The QA script checks a stationary story camera in development, fixed mobile canvas bounds through explorer entry, transparent explorer surfaces, component selection, single-open accordion explanations, keyboard collapse, responsive layout, reduced motion, and shared phantom slice geometry/tissue contrast.
 
 For visual changes, inspect forward/reverse scrolling, resizing, mobile layout, reduced motion, and browser console output. Contribution and asset conventions are in [AGENTS.md](AGENTS.md).
 

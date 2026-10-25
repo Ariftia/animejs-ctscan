@@ -1,7 +1,7 @@
 # Inside a CT scanner — Requirements
 
 Updated: 2026-10-26 (Asia/Jakarta).
-Status: Remove the signal progress track, keep scanner framing fixed, and match the scanned object to its reconstructed volume.
+Status: Add selected-part zoom and collapsible explanations to part 12.
 
 ## Purpose and scope
 
@@ -19,7 +19,7 @@ Preserve the educational narrative, paper/ink/teal identity, and manual explorer
 - Acquisition and reconstruction share the same body/lung/spine geometry, dimensions, depth, position, and orientation. Slice reveal remains supported, with a gentler reduced-motion alternative.
 - Reassembly completes the story before the interactive explorer.
 - Label sampled projection angles and detector position so attenuation profiles are understandable.
-- The final explorer exposes the selected component and allows model interaction.
+- The final explorer zooms to and isolates the selected component, opens its explanation within its list row, and allows model interaction. Only one row expands at a time. Closing it restores the overview; keyboard activation and model selection share the same state. Reduced motion uses an immediate focus change.
 - One persistent WebGL canvas, normalized scroll progress, and reduced-motion support remain intact.
 - Required verification follows [AGENTS.md](AGENTS.md).
 

@@ -77,6 +77,7 @@ export function CTScanner() {
   const housingCrown = useRef<Group>(null);
   const floraHousing = useRef<Group>(null);
   const ring = useRef<Group>(null);
+  const ringFrame = useRef<Group>(null);
   const table = useRef<Group>(null);
   const tube = useRef<Group>(null);
   const detector = useRef<Group>(null);
@@ -148,15 +149,19 @@ export function CTScanner() {
     setObjectOpacity(ring.current, m.surfaceAlpha * hardwareAlpha * ringAlpha);
     setObjectOpacity(table.current, m.surfaceAlpha * hardwareAlpha * tableAlpha);
 
-    const revealingInternal = activeScene === "EXPLORER" && ["rotation", "source", "detector"].includes(selected ?? "");
+    const isolated = activeScene === "EXPLORER" ? selected : null;
+    const revealingInternal = isolated !== null && isolated !== "gantry";
     const showShell = m.housingAlpha * shellReveal * hardwareAlpha > 0.005 && !revealingInternal;
     housingLeft.current.visible = showShell;
     housingRight.current.visible = showShell;
     housingBase.current.visible = showShell;
     housingCrown.current.visible = showShell;
     floraHousing.current.visible = m.housingAlpha * (1 - shellReveal) * hardwareAlpha > 0.005 && !revealingInternal;
-    ring.current.visible = ringAlpha > 0.005 || revealingInternal;
-    table.current.visible = tableAlpha > 0.005;
+    ring.current.visible = (ringAlpha > 0.005 || revealingInternal) && (!isolated || ["rotation", "source", "detector"].includes(isolated));
+    if (ringFrame.current) ringFrame.current.visible = !isolated || isolated === "rotation";
+    tube.current.visible = !isolated || isolated === "rotation" || isolated === "source";
+    detector.current.visible = !isolated || isolated === "rotation" || isolated === "detector";
+    table.current.visible = tableAlpha > 0.005 && (!isolated || isolated === "table");
   }, -1);
 
   const explorer = activeScene === "EXPLORER";
@@ -167,6 +172,7 @@ export function CTScanner() {
       <group ref={assembly}>
         <group
           ref={floraHousing}
+          name="ct-part-gantry"
           userData={{ presentation: "flora" }}
           onClick={(event) => { event.stopPropagation(); pick("gantry"); }}
         >
@@ -186,18 +192,18 @@ export function CTScanner() {
           <HousingCrown selected={selected === "gantry"} />
         </group>
 
-        <group ref={ring} position={[0, 0, -0.25]} onClick={(event) => { event.stopPropagation(); pick("rotation"); }}>
-          <RotationRing selected={selected === "rotation"} />
+        <group name="ct-part-rotation" ref={ring} position={[0, 0, -0.25]} onClick={(event) => { event.stopPropagation(); pick("rotation"); }}>
+          <group ref={ringFrame}><RotationRing selected={selected === "rotation"} /></group>
           <AcquisitionBeam />
-          <group ref={tube} position={[0, 1.47, 0.04]} onClick={(event) => { event.stopPropagation(); pick("source"); }}>
+          <group name="ct-part-source" ref={tube} position={[0, 1.47, 0.04]} onClick={(event) => { event.stopPropagation(); pick("source"); }}>
             <XRayTube selected={selected === "source"} />
           </group>
-          <group ref={detector} position={[0, -1.47, 0.04]} rotation={[0, 0, Math.PI]} onClick={(event) => { event.stopPropagation(); pick("detector"); }}>
+          <group name="ct-part-detector" ref={detector} position={[0, -1.47, 0.04]} rotation={[0, 0, Math.PI]} onClick={(event) => { event.stopPropagation(); pick("detector"); }}>
             <DetectorArray selected={selected === "detector"} />
           </group>
         </group>
 
-        <group ref={table} position={[0, -1.04, 1.38]} onClick={(event) => { event.stopPropagation(); pick("table"); }}>
+        <group name="ct-part-table" ref={table} position={[0, -1.04, 1.38]} onClick={(event) => { event.stopPropagation(); pick("table"); }}>
           <ProductTable selected={selected === "table"} />
         </group>
       </group>

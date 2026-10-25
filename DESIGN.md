@@ -44,4 +44,12 @@ The chapter copy explains the beam, detector measurement, projection, sinogram, 
 
 Slice reveal and fades remain. Reduced motion displays resolved slices without the traveling sweep. Explicit alpha marks pixels outside the body, preserving transparent backgrounds and low-density lung regions. Textures are disposed on unmount.
 
-Explorer surfaces and the WebGL background are transparent. Empty explorer overlay space passes pointer input to the canvas; component buttons and text retain their own input and selection details use a polite live region. No new dependencies or external assets are added.
+Explorer surfaces and the WebGL background are transparent. Empty explorer overlay space passes pointer input to the canvas; component buttons and text retain their own input. Component explanation panels use labelled regions and expanded-state buttons. No new dependencies or external assets are added.
+
+## Part 12 component focus
+
+Each component row is an accessible single-open accordion, controlled by the existing selected-component context. Buttons expose expanded state and name their explanation region; native keyboard activation works. The summary and a longer explanation live directly beneath the selected row. Model picking uses the same selection, so it opens/closes that same row. The canvas event filter rejects hits beneath hidden ancestors, since Three.js raycasting otherwise includes hidden meshes. Collapsed descriptions are hidden.
+
+Named scanner groups expose each part's actual world bounds to CTCamera. Explicit selection fits the camera to those bounds within the desktop model lane or mobile upper lane, preserving the current viewing direction. Other components and the floor shadow are hidden for close inspection. The rotation system includes its tube and detector. Closing the row restores the full scanner and its default camera pose. Story framing remains stationary; only explicit explorer selection/manual orbit changes it.
+
+Camera and orbit target interpolate using Three.js refs; no React updates run per frame. Reduced motion applies the pose immediately, and direct orbit/zoom input interrupts the focus animation. Resize recomputes framing. The closer orbit minimum supports small-part inspection; the explorer still allows manual drag and wheel zoom. No added dependencies or assets.

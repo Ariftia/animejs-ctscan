@@ -1,13 +1,28 @@
 "use client";
 
-import { Canvas } from "@react-three/fiber";
+import { Canvas, events } from "@react-three/fiber";
 import { Environment, Lightformer } from "@react-three/drei";
+import { Object3D } from "three";
 import { CTScanner } from "./CTScanner";
 import { CTCamera } from "./CTCamera";
+import { useExperience } from "./ExperienceContext";
 
 export function CTCanvas() {
+  const { selected, activeScene } = useExperience();
   return (
     <Canvas
+      events={(state) => ({
+        ...events(state),
+        filter: (hits) => hits.filter((hit) => {
+          // Three.js raycasting also hits hidden meshes; ignore hidden ancestors.
+          let object: Object3D | null = hit.object;
+          while (object) {
+            if (!object.visible) return false;
+            object = object.parent;
+          }
+          return true;
+        }),
+      })}
       camera={{ position: [4.8, 2.5, 7.8], fov: 36, near: 0.1, far: 100 }}
       dpr={[1, 1.5]}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
@@ -19,7 +34,7 @@ export function CTCanvas() {
       <directionalLight position={[1, 5, -5]} intensity={1.5} color="#e5efff" />
       <directionalLight position={[0, -2, 2]} intensity={0.4} color="#ccd6d8" />
       <CTScanner />
-      <mesh position={[0.6, -1.65, 0.6]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh visible={activeScene !== "EXPLORER" || !selected} position={[0.6, -1.65, 0.6]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[7, 5]} />
         <shaderMaterial
           transparent

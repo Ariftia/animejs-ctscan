@@ -129,22 +129,20 @@ button, input { font: inherit; }
   align-items: center;
   padding: 12px 0;
   border: 0;
-  border-bottom: 1px solid var(--line);
   background: transparent;
   color: var(--ink);
   text-align: left;
   cursor: pointer;
   font-size: 13px;
 }
-.component-list button b { color: var(--muted); font-weight: 400; transition: transform .2s; }
-.component-list button:hover b, .component-list button.active b { transform: rotate(45deg); color: var(--cyan); }
-.component-list button.active { color: #007681; }
+.component-row { border-bottom: 1px solid var(--line); }
+.component-list button svg { flex: none; color: var(--muted); }
+.component-list button:hover, .component-list button.active { color: #007681; }
+.component-list button.active svg { color: #007681; }
 .component-list button:focus-visible, .wordmark:focus-visible { outline: 2px solid var(--cyan); outline-offset: 5px; }
-.component-detail { margin-top: 26px; min-height: 112px; opacity: .6; }
-.component-detail.active { opacity: 1; }
-.component-detail small { display: block; margin-bottom: 8px; font: 500 9px monospace; letter-spacing: .18em; color: var(--muted); }
-.component-detail strong { display: block; margin-bottom: 6px; font-size: 18px; }
-.component-detail p { font-size: 13px; max-width: 330px; }
+.component-detail { padding: 0 0 16px; pointer-events: auto; }
+.component-detail p { font-size: 13px; line-height: 1.5; margin-bottom: 8px; max-width: 46ch; }
+.component-detail p:last-child { margin-bottom: 0; color: #315659; }
 
 .loader {
   position: fixed;
@@ -213,8 +211,7 @@ button, input { font: inherit; }
   .story-copy p { max-width: 100%; font-size: 12.5px; line-height: 1.45; margin-bottom: 10px; }
   .story-copy > small { font-size: 8.5px; letter-spacing: .14em; }
   .component-list button { padding: 12px 0; touch-action: manipulation; font-size: 12px; }
-  .component-detail { margin-top: 14px; min-height: 80px; }
-  .component-detail strong { font-size: 15px; }
+  .component-detail { padding-bottom: 12px; }
   .component-detail p { font-size: 12px; }
   .nav-kicker, .engineering-labels, .stage-caption, .debug-panel { display: none !important; }
   .explorer-section { min-height: 125svh; padding-top: 320px; }
