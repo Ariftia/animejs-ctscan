@@ -13,7 +13,7 @@ const scenes = [
   { id: "detector", number: "07", title: <>MEASURED<br />IN LIGHT</>, body: "The detector records how much radiation reaches each individual element.", meta: "DETECTOR ARRAY" },
   { id: "projection", number: "08", title: <>ONE ANGLE.<br />ONE PROJECTION.</>, body: "Each rotation produces hundreds of views: narrow records of attenuation across the body.", meta: "0° · 45° · 90° · 135° · 180°" },
   { id: "sinogram", number: "09", title: <>DATA<br />IN MOTION</>, body: "Each row records the detector readings at one angle. Stack the rows to build a sinogram.", meta: "DETECTOR POSITION × ACQUISITION ANGLE" },
-  { id: "reconstruction", number: "10", title: <>FROM SIGNAL<br />TO SLICE</>, body: "Reconstruction combines the measurements until internal structure resolves into a cross-section.", meta: "AXIAL SLICES · SIMULATED ANATOMY" },
+  { id: "reconstruction", number: "10", title: <>FROM SIGNAL<br />TO 3D VOLUME</>, body: "Reconstruction backprojects projections into slices, then stacks them into a complete 3D volumetric image.", meta: "AXIAL SLICES · 3D VOLUME RECONSTRUCTION" },
 ] as const;
 
 export function StorySections() {
