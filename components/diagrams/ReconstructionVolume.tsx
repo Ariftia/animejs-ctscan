@@ -63,13 +63,14 @@ export function createSliceTexture(slice: number, size = 512) {
   return texture;
 }
 
-const SLICE_COUNT = 7;
+const SLICE_COUNT = 15;
 
 export function ReconstructionVolume() {
   const { motion } = useExperience();
   const group = useRef<Group>(null);
   const materials = useRef<ShaderMaterial[]>([]);
-  const textures = useMemo(() => Array.from({ length: SLICE_COUNT }, (_, i) => createSliceTexture(i)), []);
+  const phantomRef = useRef<Group>(null);
+  const textures = useMemo(() => Array.from({ length: SLICE_COUNT }, (_, i) => createSliceTexture(i * 0.5)), []);
   const uniformsList = useMemo(() => textures.map((texture) => ({
     uMap: { value: texture },
     uAlpha: { value: 0 },
@@ -82,28 +83,62 @@ export function ReconstructionVolume() {
     const reveal = motion.current.sliceAlpha;
     if (group.current) {
       group.current.visible = reveal > 0.005;
-      group.current.position.z = 1.35 - reveal * 0.18;
-      // Interpolate from 2D angled slice to true 3D stacked volume pose
-      group.current.rotation.y = -0.15 + (1 - reveal) * 0.12 + reveal * 0.28;
-      group.current.rotation.x = 0.04 + reveal * 0.12;
+      // Position volume directly inside the gantry scanner bore right where the patient sits!
+      group.current.position.set(0, 0.04, 0.15 - reveal * 0.1);
+      group.current.rotation.y = -0.15 + (1 - reveal) * 0.12 + reveal * 0.32;
+      group.current.rotation.x = 0.04 + reveal * 0.14;
+    }
+    if (phantomRef.current) {
+      // 3D volumetric ghost body model resolves as slices complete stacking
+      phantomRef.current.visible = reveal > 0.4;
+      phantomRef.current.position.z = 0;
+      phantomRef.current.rotation.y = reveal * 0.08;
     }
     materials.current.forEach((material, index) => {
       if (!material) return;
-      const spread = index - Math.floor(SLICE_COUNT / 2);
-      // Center slice resolves first, then neighboring slices fan out into 3D volume
-      const sliceReveal = Math.min(1, Math.max(0, (reveal - Math.abs(spread) * 0.08) / (1 - Math.abs(spread) * 0.08)));
-      material.uniforms.uAlpha.value = sliceReveal * (spread === 0 ? 1 : 0.82);
+      // Progressive stacking: scan slices sweep and resolve one by one into a solid 3D object
+      const sliceDelay = (index / SLICE_COUNT) * 0.45;
+      const sliceReveal = Math.min(1, Math.max(0, (reveal - sliceDelay) / (1 - sliceDelay)));
+      material.uniforms.uAlpha.value = sliceReveal * 0.88;
       material.uniforms.uResolve.value = sliceReveal;
     });
   });
 
   return (
-    <group ref={group} position={[0, 0.04, 1.25]} rotation={[0.04, -0.15, 0]} visible={false}>
+    <group ref={group} position={[0, 0.04, 0.15]} rotation={[0.04, -0.15, 0]} visible={false}>
+      {/* Real 3D Anatomical Object Mesh fused with slice stack */}
+      <group ref={phantomRef} visible={false}>
+        <mesh position={[0, -0.05, 0]} scale={[0.88, 0.82, 1.25]}>
+          <capsuleGeometry args={[0.46, 1.35, 12, 28]} />
+          <meshPhysicalMaterial
+            color="#28d7e6"
+            transparent
+            opacity={0.16}
+            roughness={0.25}
+            transmission={0.65}
+            depthWrite={false}
+          />
+        </mesh>
+        {/* Core Spine & Lungs volumetric 3D silhouettes */}
+        <mesh position={[0, -0.22, 0]} scale={[0.18, 0.22, 1.2]}>
+          <boxGeometry args={[0.6, 0.5, 1.2]} />
+          <meshStandardMaterial
+            color="#ecf6f7"
+            emissive="#15abb8"
+            emissiveIntensity={0.35}
+            transparent
+            opacity={0.28}
+            depthWrite={false}
+          />
+        </mesh>
+      </group>
+
+      {/* High-density 15-slice true volumetric CT slice stack */}
       {Array.from({ length: SLICE_COUNT }, (_, index) => {
         const spread = index - Math.floor(SLICE_COUNT / 2);
         return (
-          <mesh key={index} position={[0, 0, spread * 0.14]}>
-            <planeGeometry args={[1.9, 2.25]} />
+          <mesh key={index} position={[0, 0, spread * 0.085]}>
+            <planeGeometry args={[1.7, 2.05]} />
             <shaderMaterial
               ref={(mat) => { if (mat) materials.current[index] = mat; }}
               uniforms={uniformsList[index]}
@@ -116,16 +151,16 @@ export function ReconstructionVolume() {
                 varying vec2 vUv;
                 void main() {
                   vec3 sharp = texture2D(uMap, vUv).rgb;
-                  vec2 blur = vec2(0.018 * (1.0 - uResolve));
+                  vec2 blur = vec2(0.015 * (1.0 - uResolve));
                   vec3 soft = (texture2D(uMap, vUv + blur).rgb + texture2D(uMap, vUv - blur).rgb + sharp) / 3.0;
                   float row = 1.0 - vUv.y;
                   float acquired = 1.0 - smoothstep(uResolve, uResolve + 0.04, row);
-                  vec3 color = mix(vec3(0.027), soft, acquired);
+                  vec3 color = mix(vec3(0.02), soft, acquired);
                   float sweep = (1.0 - smoothstep(0.001, 0.004, abs(row - uResolve))) * (1.0 - step(0.98, uResolve));
-                  color = mix(color, vec3(0.12, 0.75, 0.82), sweep * 0.7);
-                  float border = step(0.992, max(abs(vUv.x - 0.5), abs(vUv.y - 0.5)) * 2.0);
-                  color = mix(color, vec3(0.19, 0.32, 0.34), border);
-                  gl_FragColor = vec4(color, uAlpha);
+                  color = mix(color, vec3(0.15, 0.88, 0.95), sweep * 0.75);
+                  // Remove harsh black border so stack seamlessly blends into full 3D body volume
+                  float alphaMask = smoothstep(0.02, 0.08, length(sharp));
+                  gl_FragColor = vec4(color, uAlpha * alphaMask);
                 }`}
             />
           </mesh>
