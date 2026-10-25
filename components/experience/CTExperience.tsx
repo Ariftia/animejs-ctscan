@@ -1,6 +1,6 @@
 "use client";
 
-import { ExperienceProvider } from "./ExperienceContext";
+import { ExperienceProvider, useExperience } from "./ExperienceContext";
 import { CTCanvas } from "./CTCanvas";
 import { StorySections } from "@/components/scenes/StorySections";
 import { Navigation } from "@/components/ui/Navigation";
@@ -14,11 +14,20 @@ export function CTExperience() {
     <ExperienceProvider>
       <Navigation />
       <ProgressRail />
-      <div className="canvas-stage" aria-label="Interactive CT scanner model"><CTCanvas /></div>
+      <ScannerStage />
       <EngineeringOverlay />
       <StorySections />
       <LoadingScreen />
       <DebugPanel />
     </ExperienceProvider>
+  );
+}
+
+function ScannerStage() {
+  const { activeScene } = useExperience();
+  return (
+    <div className={`canvas-stage ${activeScene === "EXPLORER" ? "explorer-stage" : ""}`} aria-label="Interactive CT scanner model">
+      <CTCanvas />
+    </div>
   );
 }

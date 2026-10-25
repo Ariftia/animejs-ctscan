@@ -93,7 +93,7 @@ export function CTScanner() {
     const m = motion.current;
     if (!root.current || !housingLeft.current || !housingRight.current || !housingBase.current || !housingCrown.current || !floraHousing.current || !ring.current || !table.current || !tube.current || !detector.current) return;
 
-    root.current.position.set(size.width < 800 ? m.machineX * 0.15 : m.machineX, m.machineY - 0.05, 0);
+    root.current.position.set(size.width <= 800 ? m.machineX * 0.15 : m.machineX, m.machineY - 0.05, 0);
     root.current.rotation.y = m.machineRotY;
 
     housingLeft.current.position.x = -m.explode * 1.42;

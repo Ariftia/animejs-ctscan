@@ -2,8 +2,9 @@
 
 import { OrbitControls } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
-import { Vector3 } from "three";
+import { useEffect, useMemo, useRef } from "react";
+import { PerspectiveCamera, Vector3 } from "three";
+import { SCENE_ORDER } from "@/components/animation/ranges";
 import { useExperience } from "./ExperienceContext";
 
 export function CTCamera() {
@@ -11,14 +12,27 @@ export function CTCamera() {
   const { motion, activeScene } = useExperience();
   const target = useMemo(() => new Vector3(), []);
   const monitor = useRef({ frames: 0, last: 0 });
+  const explorerReady = useRef(false);
+  const mobile = size.width <= 800;
+  const copyOnRight = SCENE_ORDER.indexOf(activeScene) % 3 === 1;
+
+  useEffect(() => {
+    explorerReady.current = false;
+  }, [activeScene, size.width, size.height]);
 
   useFrame((state) => {
     const m = motion.current;
-    if (activeScene !== "EXPLORER") {
-      const framing = Math.max(1, 0.85 / (size.width / size.height));
-      camera.position.set(m.cameraX * framing, m.cameraY * framing, m.cameraZ * framing);
-      target.set(m.lookX, 0, 0);
+    const machineX = mobile ? m.machineX * 0.15 : m.machineX;
+    target.set(machineX + m.lookX, m.machineY - 0.25, 0.4);
+    if (camera instanceof PerspectiveCamera) {
+      // Reserve a stable visual lane without changing the model's world coordinates.
+      camera.setViewOffset(size.width, size.height, mobile ? 0 : size.width * (copyOnRight ? 0.21 : -0.21), 0, size.width, size.height);
+    }
+    if (activeScene !== "EXPLORER" || !explorerReady.current) {
+      const framing = Math.max(1, (mobile ? 0.95 : 1.6) / (size.width / size.height)) * (1 + m.explode * 0.7 + m.dataAlpha * 0.35);
+      camera.position.set(machineX + m.lookX + m.cameraX * framing, m.cameraY * framing, m.cameraZ * framing);
       camera.lookAt(target);
+      explorerReady.current = true;
     }
     if (process.env.NODE_ENV !== "production") {
       monitor.current.frames += 1;
@@ -41,7 +55,7 @@ export function CTCamera() {
       enablePan={false}
       minDistance={4.5}
       maxDistance={10}
-      target={[0.5, 0, 0]}
+      target={[mobile ? motion.current.machineX * 0.15 : motion.current.machineX, motion.current.machineY - 0.25, 0.4]}
       makeDefault
     />
   );

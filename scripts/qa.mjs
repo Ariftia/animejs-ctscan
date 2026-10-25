@@ -1,4 +1,5 @@
 import { chromium } from "playwright";
+import assert from "node:assert/strict";
 
 const browser = await chromium.launch({ headless: true });
 const errors = [];
@@ -33,6 +34,12 @@ async function inspectPage(page, label) {
 const desktop = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
 const desktopInfo = await inspectPage(desktop, "desktop");
 await capture(desktop, "/tmp/ct-hero-qa.png");
+
+// These boundaries differ from equal twelfths and must update in both directions.
+for (const [progress, scene] of [[0.05, "02"], [0.04, "01"], [0.05, "02"]]) {
+  await desktop.evaluate((value) => window.scrollTo(0, (document.documentElement.scrollHeight - innerHeight) * value), progress);
+  await desktop.locator(".nav-status span").first().filter({ hasText: new RegExp(`^${scene}$`) }).waitFor({ timeout: 10000 });
+}
 
 await desktop.evaluate(() => window.scrollTo(0, document.getElementById("explode").offsetTop));
 await desktop.waitForTimeout(900);
@@ -69,6 +76,24 @@ const mobileInfo = await inspectPage(mobile, "mobile");
 await mobile.locator(".loader").waitFor({ state: "hidden", timeout: 20000 }).catch(() => {});
 mobileInfo.loaderVisible = await mobile.locator(".loader").evaluate((element) => getComputedStyle(element).visibility);
 await capture(mobile, "/tmp/ct-mobile-qa.png");
+await mobile.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+await mobile.locator(".nav-status span").first().filter({ hasText: /^12$/ }).waitFor();
+await mobile.getByRole("button", { name: "Detector array" }).click();
+await mobile.waitForTimeout(900);
+const mobileStage = await mobile.locator(".canvas-stage").boundingBox();
+const explorerHeading = await mobile.locator("#explorer h2").boundingBox();
+assert.ok(mobileStage.y + mobileStage.height <= explorerHeading.y, "Mobile explorer model must clear the heading");
+assert.equal(await mobile.locator(".component-detail strong").textContent(), "Detector array");
+await capture(mobile, "/tmp/ct-mobile-explorer-qa.png");
+for (const width of [320, 800, 1024, 1920]) {
+  await mobile.setViewportSize({ width, height: 844 });
+  const layout = await mobile.evaluate(() => ({
+    overflow: document.body.scrollWidth > innerWidth,
+    clippedHeadings: Array.from(document.querySelectorAll("h1, h2")).filter((heading) => heading.scrollWidth > heading.clientWidth + 1).map((heading) => heading.textContent),
+  }));
+  assert.equal(layout.overflow, false, `Page overflow at ${width}px`);
+  assert.deepEqual(layout.clippedHeadings, [], `Clipped headings at ${width}px`);
+}
 await mobile.close();
 
 const reduced = await browser.newPage({ viewport: { width: 1280, height: 720 }, reducedMotion: "reduce" });
@@ -81,3 +106,15 @@ const reducedScene = await reduced.locator(".nav-status span").first().textConte
 
 console.log(JSON.stringify({ desktopInfo, midScene, reverseScene, explorerScene, selection, mobileInfo, reducedInfo, reducedScene, errors }, null, 2));
 await browser.close();
+
+for (const info of [desktopInfo, mobileInfo, reducedInfo]) {
+  assert.equal(info.overlay, false);
+  assert.equal(info.canvas.length, 1);
+  assert.equal(info.loaderVisible, "hidden");
+  assert.equal(info.bodyWidth, info.viewportWidth);
+}
+assert.equal(midScene, "05");
+assert.equal(reverseScene, "01");
+assert.equal(explorerScene, "12");
+assert.equal(selection, "X-ray source");
+assert.deepEqual(errors, []);

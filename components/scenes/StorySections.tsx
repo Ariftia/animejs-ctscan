@@ -50,6 +50,7 @@ function ExplorerSection() {
               key={component.id}
               type="button"
               className={selected === component.id ? "active" : ""}
+              aria-pressed={selected === component.id}
               onClick={() => setSelected(selected === component.id ? null : component.id)}
             >
               <span>{component.label}</span><b>↗</b>

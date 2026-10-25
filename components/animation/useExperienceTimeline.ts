@@ -24,10 +24,10 @@ export function useExperienceTimeline(
       .add({ targets: m, explode: 0, beamAlpha: 0.9, ringRotation: Math.PI * 2.1 * distance, machineX: -0.55, cameraX: 1.1, cameraY: 0.35, cameraZ: 5.9, duration: 91 }, 318)
       .add({ targets: m, patientAlpha: 0.54, ringRotation: Math.PI * 2.75 * distance, machineX: 0.65, duration: 91 }, 409)
       .add({ targets: m, detectorPulse: 1, beamAlpha: 0.7, machineX: 0.8, cameraX: -0.4, cameraZ: 5.5, ringRotation: Math.PI * 3.35 * distance, duration: 91 }, 500)
-      .add({ targets: m, dataAlpha: 1, patientAlpha: 0.3, beamAlpha: 0.45, machineX: -0.45, cameraX: 0, cameraZ: 6.3, ringRotation: Math.PI * 4.4 * distance, duration: 91 }, 591)
+      .add({ targets: m, dataAlpha: 1, lookX: 0.7, patientAlpha: 0.3, beamAlpha: 0.45, machineX: -0.45, cameraX: 0, cameraZ: 6.3, ringRotation: Math.PI * 4.4 * distance, duration: 91 }, 591)
       .add({ targets: m, sinogramAlpha: 1, beamAlpha: 0, detectorPulse: 0, housingAlpha: 0, machineX: 0.65, duration: 45 }, 682)
-      .add({ targets: m, reconstructionAlpha: 1, sliceAlpha: 1, patientAlpha: 0, dataAlpha: 0.08, sinogramAlpha: 0.04, cameraZ: 6.8, duration: 45 }, 773)
-      .add({ targets: m, reconstructionAlpha: 0, sliceAlpha: 0, dataAlpha: 0, sinogramAlpha: 0, housingAlpha: 1, patientAlpha: 0, explode: 0, outlineAlpha: 0.2, surfaceAlpha: 1, machineX: -0.5, cameraX: 3.1, cameraY: 1.6, cameraZ: 7.1, machineRotY: 0.06, duration: 91 }, 864)
+      .add({ targets: m, reconstructionAlpha: 1, sliceAlpha: 1, patientAlpha: 0, lookX: 0, dataAlpha: 0.08, sinogramAlpha: 0.04, cameraZ: 6.8, duration: 45 }, 773)
+      .add({ targets: m, reconstructionAlpha: 0, sliceAlpha: 0, dataAlpha: 0, sinogramAlpha: 0, housingAlpha: 1, patientAlpha: 0, explode: 0, outlineAlpha: 0.2, surfaceAlpha: 1, machineX: 0.8, cameraX: 3.7, cameraY: 2, cameraZ: 7.5, machineRotY: 0.06, duration: 91 }, 864)
       .add({ targets: m, machineX: 0.8, cameraX: 3.7, cameraY: 2, cameraZ: 7.5, duration: 45 }, 955);
 
     timelineRef.current = timeline;
