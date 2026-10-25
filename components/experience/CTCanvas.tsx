@@ -13,7 +13,6 @@ export function CTCanvas() {
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       fallback={<div className="webgl-fallback">Interactive model unavailable. The full CT story remains below.</div>}
     >
-      <color attach="background" args={["#f3f1eb"]} />
       <ambientLight intensity={0.35} />
       <directionalLight position={[4, 8, 5]} intensity={2.4} color="#ffffff" castShadow shadow-bias={-0.0001} />
       <directionalLight position={[-4, 3, 2]} intensity={0.9} color="#d2eaec" />

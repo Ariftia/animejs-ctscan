@@ -1,7 +1,7 @@
 "use client";
 
 import { MutableRefObject, useEffect } from "react";
-import { rangeProgress, SCENES, sceneAt, SceneKey } from "./ranges";
+import { sceneAt, SceneKey } from "./ranges";
 
 type Options = {
   progressRef: MutableRefObject<number>;
@@ -18,8 +18,6 @@ export function useScrollProgress({ progressRef, onSceneChange }: Options) {
       const next = Math.min(1, Math.max(0, window.scrollY / max));
       progressRef.current = next;
       document.documentElement.style.setProperty("--experience-progress", String(next));
-      document.documentElement.style.setProperty("--signal-fill", String(rangeProgress(next, [SCENES.XRAY[0], SCENES.RECONSTRUCTION[1]])));
-      document.documentElement.style.setProperty("--explorer-framing", String(rangeProgress(next, SCENES.REASSEMBLY)));
 
       const scene = sceneAt(next);
       if (scene !== last) {

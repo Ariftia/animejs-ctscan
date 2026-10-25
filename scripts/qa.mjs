@@ -1,5 +1,27 @@
 import { chromium } from "playwright";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import ts from "typescript";
+
+// Exercise the actual shared phantom rasterizer without a separate unit-test runtime.
+const acquisitionSource = await readFile(new URL("../components/scanner/acquisition.ts", import.meta.url), "utf8");
+const acquisitionModule = ts.transpileModule(acquisitionSource, { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText;
+const { createPhantomSlice, PHANTOM_VOLUME } = await import(`data:text/javascript;base64,${Buffer.from(acquisitionModule).toString("base64")}`);
+const phantomSize = 257;
+const firstSlice = createPhantomSlice(0, phantomSize);
+const lastSlice = createPhantomSlice(PHANTOM_VOLUME.sliceCount - 1, phantomSize);
+const tissuePixel = (x, y) => {
+  const column = Math.round((x / PHANTOM_VOLUME.width + 0.5) * (phantomSize - 1));
+  const row = Math.round((y / PHANTOM_VOLUME.height + 0.5) * (phantomSize - 1));
+  return firstSlice.slice((row * phantomSize + column) * 4, (row * phantomSize + column) * 4 + 4);
+};
+assert.ok(tissuePixel(-0.16, 0.08)[0] < tissuePixel(0, 0)[0], "Left lung must reconstruct darker than the body");
+assert.ok(tissuePixel(0.16, 0.08)[0] < tissuePixel(0, 0)[0], "Right lung must reconstruct darker than the body");
+assert.ok(tissuePixel(0, -0.28)[0] > tissuePixel(0, 0)[0], "The spine must reconstruct brighter than the body");
+assert.equal(tissuePixel(0.5, 0.6)[3], 0, "Pixels outside the scanned object must be transparent");
+for (let pixel = 3; pixel < firstSlice.length; pixel += 4) {
+  assert.equal(firstSlice[pixel], lastSlice[pixel], "All slice silhouettes must match the scanned extruded phantom");
+}
 
 const browser = await chromium.launch({ headless: true });
 const errors = [];
@@ -35,20 +57,7 @@ const desktop = await browser.newPage({ viewport: { width: 1440, height: 900 }, 
 const desktopInfo = await inspectPage(desktop, "desktop");
 assert.equal(await desktop.locator(".debug-panel").isVisible(), false, "Debug controls must be hidden on the normal page");
 await capture(desktop, "/tmp/ct-hero-qa.png");
-// The signal path must retrace scroll progress and identify the current handoff.
-const signalFills = [];
-for (const [progress, section, step] of [[0.38, "xray", "X-ray beam"], [0.65, "projection", "Measurement"], [0.74, "sinogram", "Sinogram"], [0.83, "reconstruction", "Volume"], [0.65, "projection", "Measurement"]]) {
-  await desktop.evaluate((value) => window.scrollTo(0, (document.documentElement.scrollHeight - innerHeight) * value), progress);
-  await desktop.waitForFunction((value) => Math.abs(Number(getComputedStyle(document.documentElement).getPropertyValue("--experience-progress")) - value) < 0.001, progress);
-  const figure = desktop.locator(`#${section} .signal-journey`);
-  await figure.locator("[aria-current=step]").filter({ hasText: step }).waitFor();
-  signalFills.push(await figure.evaluate((node) => Number(getComputedStyle(node).getPropertyValue("--signal-fill"))));
-}
-assert.ok(signalFills[0] < signalFills[1] && signalFills[1] < signalFills[2] && signalFills[2] < signalFills[3], "Signal path must advance from beam to volume");
-assert.ok(Math.abs(signalFills[1] - signalFills[4]) < 0.005, "Signal path must restore its fill on reverse scroll");
-assert.ok((await desktop.locator("#reassembly p").textContent()).includes("reconstruction software"), "Reassembly must complete the educational story");
-await desktop.evaluate(() => window.scrollTo(0, 0));
-await desktop.waitForTimeout(300);
+assert.equal(await desktop.locator(".signal-journey").count(), 0, "The beam-to-volume progress track must be removed");
 const fixedCamera = await desktop.locator("[data-camera]").count() ? await desktop.locator("[data-camera]").textContent() : null;
 
 // These boundaries differ from equal twelfths and must update in both directions.
@@ -106,25 +115,33 @@ const clippedLabels = await mobile.locator(".projection-label").evaluateAll((lab
 }).map((label) => label.textContent));
 assert.deepEqual(clippedLabels, [], "Projection labels must fit the mobile viewport");
 await capture(mobile, "/tmp/ct-projection-mobile-qa.png");
-const framingHeights = [];
+const framingBounds = [];
 for (const progress of [0.87, 0.90, 0.93, 0.95, 0.93, 0.90, 0.87]) {
   await mobile.evaluate((value) => window.scrollTo(0, (document.documentElement.scrollHeight - innerHeight) * value), progress);
   await mobile.waitForFunction((value) => Math.abs(Number(getComputedStyle(document.documentElement).getPropertyValue("--experience-progress")) - value) < 0.001, progress);
-  framingHeights.push((await mobile.locator(".canvas-stage").boundingBox()).height);
+  framingBounds.push(await mobile.locator(".canvas-stage").boundingBox());
 }
-assert.ok(framingHeights[0] > framingHeights[1] && framingHeights[1] > framingHeights[2] && framingHeights[2] > framingHeights[3], "Mobile framing must shrink continuously before the explorer boundary");
-for (let index = 0; index < 3; index += 1) {
-  assert.ok(Math.abs(framingHeights[index] - framingHeights[6 - index]) < 2, "Reverse scroll must restore mobile framing");
+for (const bounds of framingBounds) {
+  assert.deepEqual(bounds, framingBounds[0], "The scanner viewport must stay fixed during forward/reverse scrolling");
 }
 await mobile.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
 await mobile.locator(".nav-status span").first().filter({ hasText: /^12$/ }).waitFor();
 await mobile.getByRole("button", { name: "Detector array" }).click();
 await mobile.waitForTimeout(900);
-const mobileStage = await mobile.locator(".canvas-stage").boundingBox();
-const explorerHeading = await mobile.locator("#explorer h2").boundingBox();
-assert.ok(mobileStage.y + mobileStage.height <= explorerHeading.y, "Mobile explorer model must clear the heading");
+const explorerStyle = await mobile.locator(".explorer-copy").evaluate((node) => ({
+  background: getComputedStyle(node).backgroundColor,
+  pointerEvents: getComputedStyle(node).pointerEvents,
+}));
+assert.equal(explorerStyle.background, "rgba(0, 0, 0, 0)", "Explorer overlay must be transparent");
+assert.equal(explorerStyle.pointerEvents, "none", "Empty overlay space must allow model interaction");
+assert.deepEqual(await mobile.locator(".canvas-stage").boundingBox(), framingBounds[0], "Entering the explorer must not shrink or reposition the canvas");
 assert.equal(await mobile.locator(".component-detail strong").textContent(), "Detector array");
 await capture(mobile, "/tmp/ct-mobile-explorer-qa.png");
+const explorerScroll = await mobile.evaluate(() => scrollY);
+await mobile.locator("#explorer h2").hover();
+await mobile.mouse.wheel(0, -400);
+await mobile.waitForFunction((previous) => scrollY < previous, explorerScroll);
+await mobile.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
 for (const width of [320, 800, 1024, 1920]) {
   await mobile.setViewportSize({ width, height: 844 });
   const layout = await mobile.evaluate(() => ({
@@ -142,11 +159,6 @@ await reduced.locator(".loader").waitFor({ state: "hidden", timeout: 20000 }).ca
 reducedInfo.loaderVisible = await reduced.locator(".loader").evaluate((element) => getComputedStyle(element).visibility);
 await reduced.evaluate(() => window.scrollTo(0, (document.documentElement.scrollHeight - innerHeight) * 0.25));
 await reduced.waitForTimeout(500);
-await reduced.evaluate(() => window.scrollTo(0, (document.documentElement.scrollHeight - innerHeight) * 0.65));
-await reduced.locator("#projection [aria-current=step]").filter({ hasText: "Measurement" }).waitFor();
-await reduced.waitForTimeout(200);
-const reducedFill = await reduced.locator("#projection .signal-journey").evaluate((node) => Number(getComputedStyle(node).getPropertyValue("--signal-fill")));
-assert.ok(Math.abs(reducedFill - 1 / 3) < 0.001, "Reduced motion uses discrete signal stages instead of a traveling stroke");
 const reducedScene = await reduced.locator(".nav-status span").first().textContent();
 
 console.log(JSON.stringify({ desktopInfo, midScene, reverseScene, explorerScene, selection, mobileInfo, reducedInfo, reducedScene, errors }, null, 2));

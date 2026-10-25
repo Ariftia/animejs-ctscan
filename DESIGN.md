@@ -20,7 +20,7 @@ No persistence or migrations are involved. No new asset downloads are added to t
 
 ## Placement refinement
 
-The story camera uses one fixed position, target, scale, and machine angle throughout scrolling. All desktop copy stays on the left and the model remains on the right; camera pans, automatic zooms, and lane swaps are removed. Responsive framing still adapts to viewport size. Explorer orbit controls remain user-driven. Camera, scanner, and CSS use the same inclusive 800px mobile breakpoint. The mobile canvas shrinks continuously during reassembly into a compact explorer view below navigation. Explosion distance and scroll-driven rotation use a 0.55 multiplier (0.18 with reduced motion); live acquisition rotation is 0.2 radians per second.
+The story camera uses one fixed position, target, scale, and machine angle throughout scrolling. All desktop copy stays on the left and the model remains on the right; camera pans, automatic zooms, and lane swaps are removed. Responsive framing still adapts to viewport size. Explorer orbit controls remain user-driven. Camera, scanner, and CSS use the same inclusive 800px mobile breakpoint. The canvas keeps its full viewport size through reassembly and explorer entry. A fixed mobile view offset reserves the upper part of the screen for the scanner throughout the story. Orbit distance limits scale with responsive camera framing, avoiding a zoom clamp when explorer interaction starts. Root scanner angle is constant; only internal explanatory motion remains. Explosion distance and scroll-driven rotation use a 0.55 multiplier (0.18 with reduced motion); live acquisition rotation is 0.2 radians per second.
 
 Scene notifications use `sceneAt` from the centralized ranges, matching the timeline rather than equal twelfths. The existing condensed display and sans-serif font stack is intentionally preserved; the mechanical design scan's two font-style warnings refer to this incumbent typography, outside the placement scope.
 
@@ -30,14 +30,18 @@ The assembled table group sits at Y=-1.04. With the existing native table geomet
 
 ## Reconstruction presentation
 
-Reconstruction crossfades scanner hardware into a stack of 15 synthetic 512px axial cross-sections. Stable shader uniforms, disabled depth writes for translucent surfaces, and hidden fully faded hardware keep the transition clear. Shell, ring, and bed visibility follows opacity; acquisition-beam shader materials retain ownership of their own opacity/depth state. Texture resources are disposed on unmount. The signal journey enhancement below describes the slice animation and reduced-motion treatment.
+Reconstruction crossfades scanner hardware into a stack of 15 synthetic 512px axial cross-sections. Stable shader uniforms, disabled depth writes for translucent surfaces, and hidden fully faded hardware keep the transition clear. Shell, ring, and bed visibility follows opacity; acquisition-beam shader materials retain ownership of their own opacity/depth state. Texture resources are disposed on unmount. The shared-object section below describes the slice animation and reduced-motion treatment.
 
 ## Projection readouts
 
 The projection chart shows attenuation profiles at fixed 0°, 45°, 90°, 135°, and 180° acquisition angles. Rows share a left edge and baseline; bar height encodes negative-log transmission across detector positions. Dark teal bars and angle/axis annotations replace the unlabeled, staggered moving marks. Profiles are calculated once and remain steady; only their visibility follows the scroll timeline. DOM annotations use the existing Drei Html component, local fonts, and the same visibility envelope as the bars.
 
-## Signal journey and reconstruction enhancement
+## Shared scanned object and reconstruction
 
-The chapter copy explains what changes between a beam, a detector measurement, a projection, a sinogram, and reconstructed anatomy. Reassembly now closes the narrative before the explorer. Acquisition chapters include a compact four-stage SVG signal path: its stroke follows the existing normalized scroll loop between the centralized X-ray and reconstruction ranges. The current stage follows the chapter; reduced motion uses discrete stage fills. No extra animation loop or dependency is introduced.
+The chapter copy explains the beam, detector measurement, projection, sinogram, and reconstructed anatomy. Reassembly closes the narrative before the explorer. The beam-to-volume progress track has been removed at the user's request.
 
-The current reconstruction implementation uses 15 synthetic 512px cross-sections. The slices progressively resolve and close their spacing into a compact volume; the unrelated capsule/block overlay is removed. Background pixels are excluded using scalar intensity so translucent black rectangles do not obscure the anatomy. Reduced motion fixes the stack orientation and spacing, removes the traveling slice sweep, and retains the fade. The synthetic texture generation and texture disposal remain local, with no new model or image assets. Explorer selection details use a polite live region.
+`PHANTOM` defines the same body, two lung regions, and spine for attenuation calculations, the visible acquisition object, and reconstructed slices. `PHANTOM_VOLUME` owns their shared model-space center, depth, and raster/plane bounds. The acquisition object extrudes the axial ellipses along the scanner's Z axis. Fifteen synthetic cross-sections cover that same depth with identical geometry and fixed orientation; only subtle grayscale texture varies between slices. No extra heart/ribs, taper, enlarged planes, drifting position, or rotating stack are introduced by reconstruction.
+
+Slice reveal and fades remain. Reduced motion displays resolved slices without the traveling sweep. Explicit alpha marks pixels outside the body, preserving transparent backgrounds and low-density lung regions. Textures are disposed on unmount.
+
+Explorer surfaces and the WebGL background are transparent. Empty explorer overlay space passes pointer input to the canvas; component buttons and text retain their own input and selection details use a polite live region. No new dependencies or external assets are added.

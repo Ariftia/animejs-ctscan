@@ -13,6 +13,7 @@ export function CTCamera() {
   const monitor = useRef({ frames: 0, last: 0 });
   const explorerReady = useRef(false);
   const mobile = size.width <= 800;
+  const framing = Math.max(mobile ? 1.6 : 1, (mobile ? 0.8 : 1.6) / (size.width / size.height)) * 1.2;
 
   useEffect(() => {
     explorerReady.current = false;
@@ -24,10 +25,9 @@ export function CTCamera() {
     target.set(machineX + (mobile ? 0 : m.lookX), m.machineY - (mobile ? 0 : 0.25), 0.4);
     if (camera instanceof PerspectiveCamera) {
       // Reserve a stable visual lane without changing the model's world coordinates.
-      camera.setViewOffset(size.width, size.height, mobile ? 0 : size.width * -0.21, 0, size.width, size.height);
+      camera.setViewOffset(size.width, size.height, mobile ? 0 : size.width * -0.21, mobile ? size.height * 0.28 : 0, size.width, size.height);
     }
     if (activeScene !== "EXPLORER" || !explorerReady.current) {
-      const framing = Math.max(1, (mobile ? 0.8 : 1.6) / (size.width / size.height)) * 1.2;
       camera.position.set(machineX + (mobile ? 0 : m.lookX) + m.cameraX * framing, (m.cameraY + (mobile ? 0.25 : 0)) * framing, m.cameraZ * framing);
       camera.lookAt(target);
       explorerReady.current = true;
@@ -51,8 +51,8 @@ export function CTCamera() {
     <OrbitControls
       enabled={activeScene === "EXPLORER"}
       enablePan={false}
-      minDistance={4.5}
-      maxDistance={10}
+      minDistance={4.5 * framing}
+      maxDistance={10 * framing}
       target={[(mobile ? 0 : motion.current.machineX) + (mobile ? 0 : motion.current.lookX), motion.current.machineY - (mobile ? 0 : 0.25), 0.4]}
       makeDefault
     />

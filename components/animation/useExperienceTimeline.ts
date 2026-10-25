@@ -18,8 +18,8 @@ export function useExperienceTimeline(
 
     timeline
       .add({ targets: m, outlineAlpha: 0.34, surfaceAlpha: 1, duration: 91 }, 0)
-      .add({ targets: m, outlineAlpha: 0.22, surfaceAlpha: 1, tableFeed: 1, machineRotY: 0.14, duration: 91 }, 45)
-      .add({ targets: m, explode: 1 * distance, housingAlpha: 0.34, tableFeed: 0, machineRotY: 0.08, duration: 91 }, 136)
+      .add({ targets: m, outlineAlpha: 0.22, surfaceAlpha: 1, tableFeed: 1, duration: 91 }, 45)
+      .add({ targets: m, explode: 1 * distance, housingAlpha: 0.34, tableFeed: 0, duration: 91 }, 136)
       .add({ targets: m, housingAlpha: 0.18, ringRotation: Math.PI * 1.35 * distance, duration: 91 }, 227)
       .add({ targets: m, explode: 0, housingAlpha: 0, beamAlpha: 0.9, ringRotation: Math.PI * 2.1 * distance, duration: 91 }, 318)
       .add({ targets: m, patientAlpha: 0.54, ringRotation: Math.PI * 2.75 * distance, duration: 91 }, 409)

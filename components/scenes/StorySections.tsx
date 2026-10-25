@@ -1,6 +1,5 @@
 "use client";
 
-import { CSSProperties } from "react";
 import { CT_COMPONENTS } from "@/components/scanner/config";
 import { useExperience } from "@/components/experience/ExperienceContext";
 
@@ -14,37 +13,8 @@ const scenes = [
   { id: "detector", number: "07", title: <>MEASURED<br />IN LIGHT</>, body: "In the illustrated detector, a scintillator turns incoming X-rays into light. Electronics convert that light into a digital measurement for each channel.", meta: "DETECTOR ARRAY" },
   { id: "projection", number: "08", title: <>ONE ANGLE.<br />ONE PROJECTION.</>, body: "One angle gives one profile across the detector. Repeat around the body and the profiles change. Together, those views constrain what can be inside.", meta: "0° · 45° · 90° · 135° · 180°" },
   { id: "sinogram", number: "09", title: <>DATA<br />IN MOTION</>, body: "Stack the profiles by angle. A structure traces a curved path as its position shifts across the detector. This sinogram is organized measurement data, not yet anatomy.", meta: "DETECTOR POSITION × ACQUISITION ANGLE" },
-  { id: "reconstruction", number: "10", title: <>FROM SIGNAL<br />TO 3D VOLUME</>, body: "Reconstruction combines measurements from many directions to estimate each cross-section. Watch these synthetic slices resolve, then gather into a volume you can look through.", meta: "SYNTHETIC ANATOMY · RECONSTRUCTION ILLUSTRATED" },
+  { id: "reconstruction", number: "10", title: <>FROM SIGNAL<br />TO 3D VOLUME</>, body: "Reconstruction combines measurements from many directions to estimate each cross-section. These synthetic slices reveal the same body, lung regions, and spine shown during acquisition.", meta: "SYNTHETIC ANATOMY · RECONSTRUCTION ILLUSTRATED" },
 ] as const;
-
-const signalSteps = ["X-ray beam", "Measurement", "Sinogram", "Volume"];
-
-function SignalJourney({ sceneId }: { sceneId: string }) {
-  const { reducedMotion } = useExperience();
-  const step = sceneId === "reconstruction" ? 3 : sceneId === "sinogram" ? 2 : ["detector", "projection"].includes(sceneId) ? 1 : 0;
-  const style = reducedMotion ? { "--signal-fill": step / 3 } as CSSProperties : undefined;
-  return (
-    <figure style={style} className="signal-journey" aria-label="From X-ray beam to reconstructed volume">
-      <svg viewBox="0 0 360 60" fill="none" aria-hidden="true">
-        <path className="signal-track" d="M20 30H340" />
-        <path className="signal-fill" pathLength="1" d="M20 30H340" />
-        <g className={step === 0 ? "signal-node current" : "signal-node"}>
-          <path d="M10 23L32 12M10 30H34M10 37L32 48" />
-        </g>
-        <g className={step === 1 ? "signal-node current" : "signal-node"}>
-          <path d="M110 42V24M117 42V16M124 42V31M131 42V22M138 42V35" />
-        </g>
-        <g className={step === 2 ? "signal-node current" : "signal-node"}>
-          <path d="M218 14H244V46H218ZM220 20C240 20 220 40 242 40M220 27C240 27 220 34 242 34" />
-        </g>
-        <g className={step === 3 ? "signal-node current" : "signal-node"}>
-          <path d="M324 20H346V46H324ZM328 15H350V41M332 10H354V36" />
-        </g>
-      </svg>
-      <figcaption>{signalSteps.map((label, index) => <span key={label} aria-current={index === step ? "step" : undefined}>{label}</span>)}</figcaption>
-    </figure>
-  );
-}
 
 export function StorySections() {
   return (
@@ -56,7 +26,6 @@ export function StorySections() {
             {index === 0 ? <h1>{scene.title}</h1> : <h2>{scene.title}</h2>}
             <p>{scene.body}</p>
             <small>{scene.meta}</small>
-            {["xray", "attenuation", "detector", "projection", "sinogram", "reconstruction"].includes(scene.id) && <SignalJourney sceneId={scene.id} />}
           </div>
         </section>
       ))}

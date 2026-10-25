@@ -3,8 +3,8 @@
 import { Edges, RoundedBox } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
-import { Group, MeshBasicMaterial, MeshStandardMaterial } from "three";
-import { ACQUISITION, transmission } from "./acquisition";
+import { Group, MeshStandardMaterial } from "three";
+import { ACQUISITION, PHANTOM, PHANTOM_VOLUME, transmission } from "./acquisition";
 import { useExperience } from "@/components/experience/ExperienceContext";
 
 const OUTLINE = "#18383b";
@@ -176,27 +176,29 @@ export function PatientTable({ selected = false }: { selected?: boolean }) {
 
 export function PatientPhantom() {
   const group = useRef<Group>(null);
-  const outer = useRef<MeshStandardMaterial>(null);
-  const inner = useRef<MeshBasicMaterial>(null);
+  const materials = useRef<MeshStandardMaterial[]>([]);
   const { motion } = useExperience();
 
   useFrame(() => {
     const opacity = motion.current.patientAlpha;
     if (group.current) group.current.visible = opacity > 0.005;
-    if (outer.current) outer.current.opacity = opacity * 0.3;
-    if (inner.current) inner.current.opacity = opacity * 0.11;
+    materials.current.forEach((material, index) => {
+      material.opacity = opacity * (index === 0 ? 0.3 : 0.8);
+    });
   });
 
   return (
-    <group ref={group} position={[0, 0, -0.7]} rotation={[Math.PI / 2, 0, 0]}>
-      <mesh scale={[0.85, 0.8, 1.17]}>
-        <capsuleGeometry args={[0.47, 1.4, 10, 24]} />
-        <meshPhysicalMaterial ref={outer} color="#b8e9eb" transparent opacity={0} transmission={0.38} roughness={0.34} depthWrite={false} />
-      </mesh>
-      <mesh scale={[0.35, 0.8, 0.6]}>
-        <capsuleGeometry args={[0.42, 1.08, 8, 20]} />
-        <meshBasicMaterial ref={inner} color={CYAN} transparent opacity={0} depthWrite={false} />
-      </mesh>
+    <group ref={group} position={[0, 0, PHANTOM_VOLUME.centerZ]}>
+      {PHANTOM.map((part, index) => (
+        <mesh key={index} position={[part.x, part.y, 0]} rotation={[Math.PI / 2, 0, 0]} scale={[part.rx, PHANTOM_VOLUME.depth, part.ry]}>
+          <cylinderGeometry args={[1, 1, 1, 64]} />
+          <meshStandardMaterial
+            ref={(material) => { if (material) materials.current[index] = material; }}
+            color={index === 0 ? "#b8e9eb" : index === 3 ? "#edf6f6" : "#16838b"}
+            transparent opacity={0} roughness={0.34} depthWrite={false}
+          />
+        </mesh>
+      ))}
     </group>
   );
 }

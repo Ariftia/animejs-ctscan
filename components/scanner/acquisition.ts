@@ -20,6 +20,35 @@ export const PHANTOM = [
   { x: 0, y: -0.28, rx: 0.07, ry: 0.09, mu: 1.8 },
 ] as const;
 
+// Shared model-space bounds for the scanned object and its axial reconstruction.
+export const PHANTOM_VOLUME = {
+  centerZ: -0.25,
+  depth: 1.6,
+  sliceCount: 15,
+  width: 1.02,
+  height: 1.34,
+} as const;
+
+export function createPhantomSlice(slice: number, size = 512) {
+  const pixels = new Uint8Array(size * size * 4);
+  for (let row = 0; row < size; row += 1) {
+    for (let column = 0; column < size; column += 1) {
+      const x = (column / (size - 1) - 0.5) * PHANTOM_VOLUME.width;
+      const y = (row / (size - 1) - 0.5) * PHANTOM_VOLUME.height;
+      let tissue = -1;
+      PHANTOM.forEach((part, index) => {
+        if (((x - part.x) / part.rx) ** 2 + ((y - part.y) / part.ry) ** 2 < 1) tissue = index;
+      });
+      const texture = Math.sin(x * 473 + y * 157 + slice) * Math.cos(y * 397 - x * 131 - slice) * 5;
+      const intensity = tissue < 0 ? 0 : tissue === 0 ? 115 : tissue === 3 ? 225 : 26;
+      const offset = (row * size + column) * 4;
+      pixels[offset] = pixels[offset + 1] = pixels[offset + 2] = tissue < 0 ? 0 : Math.round(intensity + texture);
+      pixels[offset + 3] = tissue < 0 ? 0 : 255;
+    }
+  }
+  return pixels;
+}
+
 export function detectorPoint(channel: number, explode: number) {
   const angle = (channel - (ACQUISITION.channels - 1) / 2) * ACQUISITION.detectorArc;
   return {

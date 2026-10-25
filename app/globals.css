@@ -114,6 +114,13 @@ button, input { font: inherit; }
 .story-copy p { max-width: 440px; margin: 0 0 28px; font-size: clamp(16px, 1.18vw, 21px); line-height: 1.45; letter-spacing: -.025em; }
 .story-copy > small { display: block; overflow-wrap: anywhere; font: 500 10px/1.6 monospace; letter-spacing: .18em; color: var(--muted); }
 
+.explorer-section, .explorer-copy, .component-list, .component-detail {
+  background: transparent;
+  box-shadow: none;
+}
+.explorer-copy { pointer-events: none; }
+.explorer-copy button, .explorer-copy > h2, .explorer-copy > p, .explorer-copy .component-detail { pointer-events: auto; }
+
 .component-list { margin-top: 32px; border-top: 1px solid var(--line); }
 .component-list button {
   width: 100%;
@@ -211,26 +218,8 @@ button, input { font: inherit; }
   .component-detail p { font-size: 12px; }
   .nav-kicker, .engineering-labels, .stage-caption, .debug-panel { display: none !important; }
   .explorer-section { min-height: 125svh; padding-top: 320px; }
-  .canvas-stage {
-    top: calc(56px * var(--explorer-framing, 0));
-    height: calc(100svh - 72svh * var(--explorer-framing, 0));
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
-}
-
-/* A continuous signal path links the acquisition chapters to reconstruction. */
-.signal-journey { margin: 28px 0 0; max-width: 390px; color: #315659; }
-.signal-journey svg { display: block; width: 100%; height: auto; overflow: visible; }
-.signal-track { stroke: var(--line); stroke-width: 1; }
-.signal-fill { stroke: #007681; stroke-width: 2; stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--signal-fill, 0)); }
-.signal-node { stroke: #6e7472; stroke-width: 1.5; fill: var(--paper); }
-.signal-node.current { stroke: #007681; stroke-width: 2; }
-.signal-journey figcaption { display: flex; justify-content: space-between; gap: 6px; font-size: 10px; line-height: 1.4; }
-.signal-journey [aria-current] { color: #006670; font-weight: 700; }
-@media (max-width: 800px) {
-  .signal-journey { margin-top: 14px; max-width: 280px; }
-  .signal-journey figcaption { font-size: 8px; }
 }
