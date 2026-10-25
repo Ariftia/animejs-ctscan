@@ -23,3 +23,7 @@ No persistence or migrations are involved. No new asset downloads are added to t
 The perspective camera reserves a left or right visual lane opposite the current story copy. Framing pulls back for exploded geometry and data displays, and the timeline recenters data displays through `lookX`. Reassembly completes the explorer pose before orbit controls take over; entering or resizing the explorer initializes its camera once. Camera, scanner, and CSS use the same inclusive 800px mobile breakpoint. The mobile explorer uses a compact canvas below the navigation so the model clears its heading and component details.
 
 Scene notifications use `sceneAt` from the centralized ranges, matching the timeline rather than equal twelfths. The existing condensed display and sans-serif font stack is intentionally preserved; the mechanical design scan's two font-style warnings refer to this incumbent typography, outside the placement scope.
+
+## Bed alignment
+
+The assembled table group sits at Y=-1.04. With the existing native table geometry, its pedestal floor nearly matches the gantry base (0.0075 model units difference), and the tabletop's lower outer corner clears the bore liner (radius 1.1870 versus 1.19). The existing exploded offset is applied from this assembled height; both the initial and animated transforms use it.

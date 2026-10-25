@@ -114,7 +114,8 @@ export function CTScanner() {
     tube.current.position.y = ACQUISITION.sourceRadius + m.explode * ACQUISITION.sourceExplode;
     detector.current.position.y = -ACQUISITION.detectorRadius - m.explode * ACQUISITION.detectorExplode;
 
-    table.current.position.y = -1.34 - m.explode * 0.55;
+    // Match the gantry floor while keeping the deck inside the bore liner.
+    table.current.position.y = -1.04 - m.explode * 0.55;
     table.current.position.z = 1.38 + m.explode * 1.15;
 
     materials.current.proceduralSurfaces.forEach((material) => {
@@ -188,7 +189,7 @@ export function CTScanner() {
           </group>
         </group>
 
-        <group ref={table} position={[0, -1.34, 1.38]} onClick={(event) => { event.stopPropagation(); pick("table"); }}>
+        <group ref={table} position={[0, -1.04, 1.38]} onClick={(event) => { event.stopPropagation(); pick("table"); }}>
           <ProductTable selected={selected === "table"} />
         </group>
       </group>

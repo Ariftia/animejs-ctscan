@@ -1,9 +1,11 @@
 # Project state
 
 Updated: 2026-10-25 (Asia/Jakarta).
-Current task: CT scanner placement polish.
+Current task: Correct patient-bed alignment and provide a development preview.
 
 ## Current behavior
+
+The bed assembly has been raised by 0.30 model units to align the pedestal floor with the gantry and clear the lower bore rim. Geometry calculations, lint, TypeScript, production build, and the complete browser QA suite passed. The dev preview is running on port 3000; device-side port forwarding is not confirmed.
 
 Scanner framing reserves space opposite story copy, fits exploded geometry and data displays, and initializes the explorer view on entry/resize. Responsive headings and metadata fit 320–1920px widths. Labels follow the model side; right-aligned body text shares the heading edge. Component selection has visible keyboard focus and pressed-state semantics. Scene notifications follow centralized timeline ranges.
 
@@ -21,4 +23,4 @@ See [PRD.md](PRD.md), [DESIGN.md](DESIGN.md), [README.md](README.md), and [WORKL
 
 ## Next step
 
-No remaining implementation work for this refinement. Review the local change; broader browser/device testing remains optional follow-up.
+Bed alignment is verified. The development server is running on port 3000; a device-side tunnel still requires a forwarding capability outside the exposed tools.
