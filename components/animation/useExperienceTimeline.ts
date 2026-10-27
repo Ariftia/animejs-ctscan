@@ -1,19 +1,19 @@
 "use client";
 
 import anime from "animejs";
-import { MutableRefObject, useEffect, useRef } from "react";
-import { MotionState } from "./motion";
+import { MutableRefObject, useEffect } from "react";
+import { createMotionState, MotionState } from "./motion";
 
 export function useExperienceTimeline(
   progressRef: MutableRefObject<number>,
   motion: MutableRefObject<MotionState>,
   reducedMotion: boolean,
 ) {
-  const timelineRef = useRef<anime.AnimeTimelineInstance | null>(null);
-
   useEffect(() => {
     const distance = reducedMotion ? 0.18 : 0.55;
     const m = motion.current;
+    // Rebuild from the same origin when motion preferences change mid-story.
+    Object.assign(m, createMotionState());
     const timeline = anime.timeline({ autoplay: false, easing: "easeInOutCubic" });
 
     timeline
@@ -30,7 +30,7 @@ export function useExperienceTimeline(
       .add({ targets: m, reconstructionAlpha: 0, sliceAlpha: 0, dataAlpha: 0, sinogramAlpha: 0, housingAlpha: 1, patientAlpha: 0, explode: 0, outlineAlpha: 0.2, surfaceAlpha: 1, duration: 91 }, 864)
       .add({ targets: m, surfaceAlpha: 1, duration: 45 }, 955);
 
-    timelineRef.current = timeline;
+    timeline.seek(progressRef.current * 1000);
     let raf = 0;
     const update = () => {
       timeline.seek(progressRef.current * 1000);
@@ -41,7 +41,6 @@ export function useExperienceTimeline(
     return () => {
       cancelAnimationFrame(raf);
       timeline.pause();
-      timelineRef.current = null;
     };
   }, [motion, progressRef, reducedMotion]);
 }

@@ -80,3 +80,15 @@
 - Picking regression: Hidden housing geometry intercepted clicks on isolated parts because Three.js raycasting includes invisible objects. Filter hits with hidden ancestors at the canvas event boundary, and assert that clicking the isolated source closes its row.
 - Documentation: Updated PRD, DESIGN, README, and STATE. Keep the pre-existing tsconfig.tsbuildinfo change outside the task commit.
 - Limits: Chromium only; physical touch devices and other browser engines remain unverified. No push or deployment.
+
+## 2026-10-27 (UTC) — Ponytail audit corrections
+
+- Model: Not available.
+- Request: Fix all three findings from the repository audit.
+- Timeline: Restore original motion values before rebuilding Anime.js tracks when reduced-motion preferences change, and seek immediately to the current progress. Remove the unused timeline ref. This prevents the exploded scanner or reconstruction state from becoming the new hero baseline.
+- Mobile: Bound explorer copy to the lower viewport and allow internal scrolling, keeping expanded explanations clear of the fixed model and navigation at 320×568. Native scroll chaining preserves return to earlier chapters.
+- Cleanup: Delete unused ProceduralParts.tsx and the superseded PatientTable function in EngineeredParts.tsx. No new dependencies or assets.
+- Regression checks: Compare the actual hero canvas before/after changing reduced motion in both directions mid-story; verify short-mobile copy bounds and access to the final component row. The audit reproduced the broken timeline and overlapping short-mobile view before implementation.
+- Verification: npm run lint, npm run typecheck, npm run build, and QA_BASE_URL=http://127.0.0.1:3002 node scripts/qa.mjs passed against the production build, with no captured console/request errors. Existing forward/reverse scroll, resize, selection, keyboard, and reduced-motion checks also passed. Inspected 320×568 and 390×844 explorer captures.
+- Documentation: Updated README, DESIGN, and STATE. Preserved the pre-existing TypeScript cache contents, recording scripts, and videos outside this task.
+- Limits: Browser plugin unavailable; used repository Playwright with headless Chromium. Physical touch devices and other browser engines remain unverified. No push or deployment.

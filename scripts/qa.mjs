@@ -60,6 +60,18 @@ await capture(desktop, "/tmp/ct-hero-qa.png");
 assert.equal(await desktop.locator(".signal-journey").count(), 0, "The beam-to-volume progress track must be removed");
 const fixedCamera = await desktop.locator("[data-camera]").count() ? await desktop.locator("[data-camera]").textContent() : null;
 
+// Returning to the hero must be independent of where motion preferences changed.
+const heroCanvas = await desktop.locator("canvas").screenshot();
+for (const [progress, reducedMotion] of [[0.25, "reduce"], [0.82, "no-preference"]]) {
+  await desktop.evaluate((value) => window.scrollTo(0, (document.documentElement.scrollHeight - innerHeight) * value), progress);
+  await desktop.waitForTimeout(700);
+  await desktop.emulateMedia({ reducedMotion });
+  await desktop.waitForTimeout(700);
+  await desktop.evaluate(() => window.scrollTo(0, 0));
+  await desktop.waitForTimeout(700);
+  assert.deepEqual(await desktop.locator("canvas").screenshot(), heroCanvas, "Motion preference changes must preserve the original assembled hero");
+}
+
 // These boundaries differ from equal twelfths and must update in both directions.
 for (const [progress, scene] of [[0.05, "02"], [0.04, "01"], [0.05, "02"]]) {
   await desktop.evaluate((value) => window.scrollTo(0, (document.documentElement.scrollHeight - innerHeight) * value), progress);
@@ -171,6 +183,26 @@ for (const width of [320, 800, 1024, 1920]) {
   assert.deepEqual(layout.clippedHeadings, [], `Clipped headings at ${width}px`);
 }
 await mobile.close();
+
+const shortMobile = await browser.newPage({ viewport: { width: 320, height: 568 } });
+await inspectPage(shortMobile, "short-mobile");
+await shortMobile.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+await shortMobile.locator(".nav-status span").first().filter({ hasText: /^12$/ }).waitFor();
+await shortMobile.getByRole("button", { name: "X-ray source", exact: true }).click();
+await shortMobile.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+await shortMobile.waitForTimeout(1200);
+const shortLayout = await shortMobile.locator(".explorer-copy").evaluate((copy) => ({
+  top: copy.getBoundingClientRect().top,
+  bottom: copy.getBoundingClientRect().bottom,
+  navBottom: document.querySelector(".navigation").getBoundingClientRect().bottom,
+  height: innerHeight,
+}));
+assert.ok(shortLayout.top >= Math.max(shortLayout.navBottom, shortLayout.height * 0.4), "Explorer copy must stay below navigation and the model lane");
+assert.ok(shortLayout.bottom <= shortLayout.height, "Explorer copy must fit the short viewport");
+await shortMobile.getByRole("button", { name: "Patient table", exact: true }).click();
+assert.equal(await shortMobile.getByRole("region", { name: "Patient table", exact: true }).isVisible(), true, "All rows must remain reachable in the scrolling copy panel");
+await capture(shortMobile, "/tmp/ct-short-mobile-qa.png");
+await shortMobile.close();
 
 const reduced = await browser.newPage({ viewport: { width: 1280, height: 720 }, reducedMotion: "reduce" });
 const reducedInfo = await inspectPage(reduced, "reduced");

@@ -1,9 +1,11 @@
 # Project state
 
-Updated: 2026-10-26 (Asia/Jakarta).
-Current task: Part 12 selected-component zoom and collapsible explanations.
+Updated: 2026-10-27 (UTC).
+Current task: Ponytail audit corrections.
 
 ## Current behavior
+
+Changing reduced-motion preferences mid-story now rebuilds the timeline from the original motion values and seeks immediately to the current progress. Returning to the hero restores the assembled scanner. Mobile explorer copy scrolls within a bounded lower panel, keeping expanded explanations clear of the fixed model/navigation on short screens. Unused legacy procedural parts and the superseded patient table are removed.
 
 Part 12 component buttons now open an explanation directly below the row and focus the camera on that component's actual world bounds. Selection isolates the part, including hiding the floor shadow; closing returns to the complete scanner overview. Model clicks share that selection. Only one labelled panel is expanded at once, with keyboard-operable controls. Reduced motion switches camera pose immediately and direct orbit input interrupts animated focusing.
 
@@ -16,11 +18,13 @@ The diagnostics panel is hidden by default and is available only with `?debug=1`
 
 The camera, scanner position, and machine angle stay fixed throughout the story; all desktop copy remains on the left. Automatic story camera pans and zooms are removed; explicit explorer selection can focus the camera. Explosion/scroll-driven rotation are reduced 45%, and live acquisition rotation slows from 0.65 to 0.2 radians per second. Mobile canvas size remains fixed through reassembly in both directions. The projection chart now labels fixed 0°/45°/90°/135°/180° attenuation profiles with detector position and holds their values steady. Reconstruction uses a synthetic slice stack and crossfades the hardware away; transparent surfaces no longer write occluding depth.
 
-The bed assembly has been raised by 0.30 model units to align the pedestal floor with the gantry and clear the lower bore rim. Geometry calculations, lint, TypeScript, production build, and the complete browser QA suite passed. The production preview for this task runs on port 3001; device-side port forwarding is not confirmed.
+The bed assembly has been raised by 0.30 model units to align the pedestal floor with the gantry and clear the lower bore rim. Geometry calculations, lint, TypeScript, production build, and the complete browser QA suite passed.
 
 Scanner framing reserves space opposite story copy, fits exploded geometry and data displays, and preserves the explorer framing on entry and adapts to resize. Responsive headings and metadata fit 320–1920px widths. Labels follow the model side; right-aligned body text shares the heading edge. Component rows have visible keyboard focus, expanded-state controls, and labelled explanation regions. Scene notifications follow centralized timeline ranges.
 
 ## Verified
+
+- Audit corrections (2026-10-27 UTC): lint, TypeScript, production build, and expanded production Playwright QA passed at http://127.0.0.1:3002 with no captured console/request errors. Both directions of mid-story motion-preference switching restore the identical hero canvas. At 320×568, expanded explorer copy remains below navigation/model space and the last component is reachable. Inspected short-mobile and standard-mobile captures.
 
 - `npm run lint`, `npm run typecheck`, and `npm run build`: passed.
 - `QA_BASE_URL=http://127.0.0.1:3001 node scripts/qa.mjs`: passed against the final production build. Shared phantom tissue contrast/silhouettes and transparent exterior pixels, progress-track removal, fixed forward/reverse mobile canvas bounds, transparent explorer pointer behavior, page scrolling over explorer text, component selection, projection labels, one canvas, responsive headings at 320/800/1024/1920px, and no captured console/request errors. Desktop 1440×900, mobile 390×844, and reduced motion 1280×720.
@@ -36,4 +40,4 @@ See [PRD.md](PRD.md), [DESIGN.md](DESIGN.md), [README.md](README.md), and [WORKL
 
 ## Next step
 
-All required checks passed. Review part 12 in the local production preview at http://localhost:3001.
+All required checks passed. Physical touch devices and other browser engines remain the next verification gap.

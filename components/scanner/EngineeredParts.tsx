@@ -151,29 +151,6 @@ export function DetectorArray({ selected = false }: { selected?: boolean }) {
   );
 }
 
-export function PatientTable({ selected = false }: { selected?: boolean }) {
-  return (
-    <group>
-      <RoundedBox args={[1.05, 0.16, 5.1]} radius={0.13} smoothness={3} castShadow receiveShadow>
-        <meshStandardMaterial color={selected ? "#b7f4f6" : "#4c595b"} roughness={0.3} metalness={0.26} transparent />
-        <PartEdges color={selected ? CYAN : OUTLINE} />
-      </RoundedBox>
-      <RoundedBox args={[0.82, 0.13, 4.62]} radius={0.08} smoothness={2} position={[0, 0.13, 0]}>
-        <meshStandardMaterial color="#151c1d" roughness={0.52} metalness={0.12} transparent />
-        <PartEdges color="#7d8b8d" />
-      </RoundedBox>
-      <RoundedBox args={[1.02, 0.22, 1.32]} radius={0.12} smoothness={3} position={[0, -0.27, 1.62]} castShadow>
-        <meshStandardMaterial color="#e3e6e2" roughness={0.32} metalness={0.1} transparent />
-        <PartEdges />
-      </RoundedBox>
-      <RoundedBox args={[1.48, 0.18, 1.65]} radius={0.08} smoothness={2} position={[0, -0.47, 1.62]} castShadow>
-        <meshStandardMaterial color="#505c5e" roughness={0.35} metalness={0.48} transparent />
-        <PartEdges />
-      </RoundedBox>
-    </group>
-  );
-}
-
 export function PatientPhantom() {
   const group = useRef<Group>(null);
   const materials = useRef<MeshStandardMaterial[]>([]);

@@ -197,6 +197,8 @@ button, input { font: inherit; }
   }
   .explorer-copy {
     width: 100%;
+    max-height: calc(56svh - 64px);
+    overflow-y: auto;
     border-radius: 0;
     padding: 0;
     margin-bottom: 8px;
