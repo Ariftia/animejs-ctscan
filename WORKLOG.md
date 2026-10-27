@@ -116,3 +116,12 @@
 - Preservation: Checked both scripts' SHA-256 hashes before/after moving; videos remain in place. The local TypeScript cache remains on disk. README documents the local-artifact policy.
 - Verification: Lint, TypeScript, production build, diff whitespace checks, and ignore-rule checks passed. QA_BASE_URL=http://127.0.0.1:3002 node scripts/qa.mjs passed against the production build with no captured browser errors. Confirmed prior GitHub run 40501841592 passed and skipped the Coolify webhook step.
 - Scope: Local commit only; no push or deployment. Recording experiments were preserved rather than run or published. Browser coverage remains limited to Chromium.
+
+## 2026-10-27 (Asia/Jakarta) — Complete artifact ignore rules
+
+- Model: Not available.
+- Request: Verify generated TypeScript caches are removed from Git and finish .gitignore cleanup.
+- Confirmed: The previous local cleanup commit records deletion of tsconfig.tsbuildinfo; the file is absent from the current index. That local commit has not been pushed.
+- Change: Group ignore rules for dependencies, build/cache output, test reports, local credentials/deployment metadata, logs, recording experiments, and OS metadata. Preserve .env.example and tracked application assets.
+- Verification: Checked 22 artifact paths are ignored and seven source/example paths remain eligible; git ls-files reports no tracked ignored files or TypeScript cache files. Diff whitespace checks passed. Application source is unchanged; lint, TypeScript, production build, and complete Playwright QA passed in the preceding cleanup.
+- Scope: Local commit only. No files containing credentials were added, and local recordings remain preserved.

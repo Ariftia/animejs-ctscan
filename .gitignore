@@ -1,10 +1,36 @@
-node_modules
-.next
+# Dependencies
+node_modules/
+
+# Build output and caches
+/.next/
+/out/
+/build/
+/.cache/
+*.tsbuildinfo
+
+# Test output
+/coverage/
+/playwright-report/
+/test-results/
+
+# Local credentials and deployment metadata
 .env
 .env.*
 !.env.example
+*.pem
+*.key
+/.vercel/
 
-# Generated caches and local recording experiments
-*.tsbuildinfo
+# Package-manager logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local recording experiments and exports
 /public/videos/
 /scripts/local/
+
+# OS metadata
+.DS_Store
+Thumbs.db

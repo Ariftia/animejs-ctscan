@@ -18,7 +18,7 @@ For visual changes, inspect forward/reverse scrolling, resizing, mobile layout, 
 
 ## Local artifacts
 
-TypeScript build caches (`*.tsbuildinfo`), generated showcase videos (`public/videos/`), and local recording experiments (`scripts/local/`) are ignored by Git. Recording experiments are local utilities, not maintained application scripts; keep exported videos outside commits unless intentionally publishing an asset.
+Build output, TypeScript caches (`*.tsbuildinfo`), test reports, package-manager logs, local environment/key files, generated showcase videos (`public/videos/`), and local recording experiments (`scripts/local/`) are ignored by Git. Recording experiments are local utilities, not maintained application scripts; keep exported videos outside commits unless intentionally publishing an asset.
 
 ## Project context
 

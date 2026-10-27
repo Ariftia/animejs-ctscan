@@ -5,7 +5,7 @@ Current task: Repository artifact cleanup.
 
 ## Current behavior
 
-Generated TypeScript caches are no longer tracked. Local recording experiments are preserved in ignored scripts/local/, and generated videos remain locally in ignored public/videos/. Application code and production assets are unchanged.
+Generated TypeScript caches are no longer tracked. Ignore rules also cover build outputs, test reports, package-manager logs, local environment/key files, and OS metadata; checks confirm no tracked files match the ignore rules. Local recording experiments are preserved in ignored scripts/local/, and generated videos remain locally in ignored public/videos/. Application code and production assets are unchanged.
 
 The GitHub Actions workflow verifies pull requests and pushes to main with lint, TypeScript, production build, and Playwright QA. After successful verification, main pushes or manual main runs call the Coolify application deployment webhook over HTTPS. Deployment credentials are read only from repository Actions secrets, with no credential values committed or logged. Live deployment is deferred at the user’s request and skips with a notice until COOLIFY_DEPLOY_WEBHOOK and COOLIFY_TOKEN are configured; no Coolify instance/application or credentials were available in this environment.
 
