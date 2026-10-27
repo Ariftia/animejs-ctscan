@@ -3,3 +3,8 @@ node_modules
 .env
 .env.*
 !.env.example
+
+# Generated caches and local recording experiments
+*.tsbuildinfo
+/public/videos/
+/scripts/local/

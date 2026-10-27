@@ -16,6 +16,10 @@ The QA script checks a stationary story camera in development, fixed mobile canv
 
 For visual changes, inspect forward/reverse scrolling, resizing, mobile layout, reduced motion, and browser console output. Contribution and asset conventions are in [AGENTS.md](AGENTS.md).
 
+## Local artifacts
+
+TypeScript build caches (`*.tsbuildinfo`), generated showcase videos (`public/videos/`), and local recording experiments (`scripts/local/`) are ignored by Git. Recording experiments are local utilities, not maintained application scripts; keep exported videos outside commits unless intentionally publishing an asset.
+
 ## Project context
 
 - [Requirements](PRD.md)

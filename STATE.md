@@ -1,9 +1,11 @@
 # Project state
 
 Updated: 2026-10-27 (Asia/Jakarta).
-Current task: GitHub Actions deployment to Coolify.
+Current task: Repository artifact cleanup.
 
 ## Current behavior
+
+Generated TypeScript caches are no longer tracked. Local recording experiments are preserved in ignored scripts/local/, and generated videos remain locally in ignored public/videos/. Application code and production assets are unchanged.
 
 The GitHub Actions workflow verifies pull requests and pushes to main with lint, TypeScript, production build, and Playwright QA. After successful verification, main pushes or manual main runs call the Coolify application deployment webhook over HTTPS. Deployment credentials are read only from repository Actions secrets, with no credential values committed or logged. Live deployment is deferred at the user’s request and skips with a notice until COOLIFY_DEPLOY_WEBHOOK and COOLIFY_TOKEN are configured; no Coolify instance/application or credentials were available in this environment.
 
@@ -26,7 +28,9 @@ Scanner framing reserves space opposite story copy, fits exploded geometry and d
 
 ## Verified
 
-- Deployment workflow (2026-10-27 Asia/Jakarta): actionlint passed; nine isolated checks covered the deployment client success path, missing secrets, insecure/credential-bearing URLs, redirects, authentication failure, network failure, wrong target, and malformed responses. Lint and TypeScript passed again. Credential-pattern scan found no matching credential values in tracked text files and the workflow. Application build and browser QA passed earlier in this session; the workflow runs them again in GitHub. Remote workflow/deployment execution is not yet verified.
+- Artifact cleanup (2026-10-27 Asia/Jakarta): lint, TypeScript, production build, and production Playwright QA passed. Ignore checks cover the cache, local scripts, and videos. No captured browser errors.
+
+- Deployment workflow (2026-10-27 Asia/Jakarta): actionlint passed; nine isolated checks covered the deployment client success path, missing secrets, insecure/credential-bearing URLs, redirects, authentication failure, network failure, wrong target, and malformed responses. Lint and TypeScript passed again. Credential-pattern scan found no matching credential values in tracked text files and the workflow. Application build and browser QA passed earlier in this session; the workflow runs them again in GitHub. GitHub run 40501841592 subsequently passed verification and the deployment configuration check; the webhook step was skipped because Coolify credentials are absent.
 
 - Audit corrections (2026-10-27 UTC): lint, TypeScript, production build, and expanded production Playwright QA passed at http://127.0.0.1:3002 with no captured console/request errors. Both directions of mid-story motion-preference switching restore the identical hero canvas. At 320×568, expanded explorer copy remains below navigation/model space and the last component is reachable. Inspected short-mobile and standard-mobile captures.
 

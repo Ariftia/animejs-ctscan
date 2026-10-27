@@ -107,3 +107,12 @@
 
 - User requested skipping Coolify configuration for now. Keep CI and the deployment workflow ready, but skip the webhook step with a notice while either Actions secret is missing. No live deployment is attempted.
 - Verification: actionlint and shell checks for absent, partial, and complete secret configuration passed.
+
+## 2026-10-27 (Asia/Jakarta) — Repository artifact cleanup
+
+- Model: Not available.
+- Request: Clean up the repository and create a local commit.
+- Change: Stop tracking tsconfig.tsbuildinfo and ignore generated TypeScript caches. Preserve local showcase scripts unchanged under ignored scripts/local/ and ignore generated public/videos/ exports. No application source, model assets, or credentials are added.
+- Preservation: Checked both scripts' SHA-256 hashes before/after moving; videos remain in place. The local TypeScript cache remains on disk. README documents the local-artifact policy.
+- Verification: Lint, TypeScript, production build, diff whitespace checks, and ignore-rule checks passed. QA_BASE_URL=http://127.0.0.1:3002 node scripts/qa.mjs passed against the production build with no captured browser errors. Confirmed prior GitHub run 40501841592 passed and skipped the Coolify webhook step.
+- Scope: Local commit only; no push or deployment. Recording experiments were preserved rather than run or published. Browser coverage remains limited to Chromium.
