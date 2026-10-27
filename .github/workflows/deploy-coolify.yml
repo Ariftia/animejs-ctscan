@@ -54,11 +54,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     permissions: {}
+    env:
+      COOLIFY_DEPLOY_WEBHOOK: ${{ secrets.COOLIFY_DEPLOY_WEBHOOK }}
+      COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
     steps:
+      - name: Check Coolify configuration
+        id: coolify
+        shell: bash
+        run: |
+          if [[ -n "$COOLIFY_DEPLOY_WEBHOOK" && -n "$COOLIFY_TOKEN" ]]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Coolify deployment skipped; configure COOLIFY_DEPLOY_WEBHOOK and COOLIFY_TOKEN in Actions secrets when ready."
+          fi
       - name: Trigger Coolify deployment
-        env:
-          COOLIFY_DEPLOY_WEBHOOK: ${{ secrets.COOLIFY_DEPLOY_WEBHOOK }}
-          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+        if: steps.coolify.outputs.configured == 'true'
         shell: python
         run: |
           import json

@@ -102,3 +102,8 @@
 - Verification: actionlint, lint, TypeScript, nine isolated deployment-client cases, and a credential-pattern scan passed. Existing application production build and complete Playwright suite passed earlier in the same session with the same application source. GitHub authentication and remote main were verified; no existing repository Actions secrets, variables, environments, or webhooks were found.
 - Blocker: No configured Coolify CLI, connector, instance/application identity, or API credentials are available. Requested secure configuration of the two Actions secrets; live deployment is not verified. README documents setup, the application branch/build/start/port settings, disabling duplicate deploy-on-push triggers when CI should gate deployment, and post-trigger verification.
 - Scope: Preserve the existing TypeScript cache change, recording scripts, and videos. No credentials or generated assets are included in the task commit.
+
+### Coolify activation deferred
+
+- User requested skipping Coolify configuration for now. Keep CI and the deployment workflow ready, but skip the webhook step with a notice while either Actions secret is missing. No live deployment is attempted.
+- Verification: actionlint and shell checks for absent, partial, and complete secret configuration passed.

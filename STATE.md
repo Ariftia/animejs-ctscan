@@ -5,7 +5,7 @@ Current task: GitHub Actions deployment to Coolify.
 
 ## Current behavior
 
-The GitHub Actions workflow verifies pull requests and pushes to main with lint, TypeScript, production build, and Playwright QA. After successful verification, main pushes or manual main runs call the Coolify application deployment webhook over HTTPS. Deployment credentials are read only from repository Actions secrets, with no credential values committed or logged. Live deployment remains blocked until COOLIFY_DEPLOY_WEBHOOK and COOLIFY_TOKEN are configured; no Coolify instance/application or credentials were available in this environment.
+The GitHub Actions workflow verifies pull requests and pushes to main with lint, TypeScript, production build, and Playwright QA. After successful verification, main pushes or manual main runs call the Coolify application deployment webhook over HTTPS. Deployment credentials are read only from repository Actions secrets, with no credential values committed or logged. Live deployment is deferred at the user’s request and skips with a notice until COOLIFY_DEPLOY_WEBHOOK and COOLIFY_TOKEN are configured; no Coolify instance/application or credentials were available in this environment.
 
 Changing reduced-motion preferences mid-story now rebuilds the timeline from the original motion values and seeks immediately to the current progress. Returning to the hero restores the assembled scanner. Mobile explorer copy scrolls within a bounded lower panel, keeping expanded explanations clear of the fixed model/navigation on short screens. Unused legacy procedural parts and the superseded patient table are removed.
 
@@ -44,4 +44,4 @@ See [PRD.md](PRD.md), [DESIGN.md](DESIGN.md), [README.md](README.md), and [WORKL
 
 ## Next step
 
-Configure COOLIFY_DEPLOY_WEBHOOK and COOLIFY_TOKEN in repository Actions secrets, identify the intended Coolify application, then verify its deployment and public URL. Physical touch devices and other browser engines remain unverified.
+When Coolify activation is requested, configure COOLIFY_DEPLOY_WEBHOOK and COOLIFY_TOKEN in repository Actions secrets, identify the intended application, then verify its deployment and public URL. Physical touch devices and other browser engines remain unverified.
