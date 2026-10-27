@@ -1,9 +1,11 @@
 # Project state
 
-Updated: 2026-10-27 (UTC).
-Current task: Ponytail audit corrections.
+Updated: 2026-10-27 (Asia/Jakarta).
+Current task: GitHub Actions deployment to Coolify.
 
 ## Current behavior
+
+The GitHub Actions workflow verifies pull requests and pushes to main with lint, TypeScript, production build, and Playwright QA. After successful verification, main pushes or manual main runs call the Coolify application deployment webhook over HTTPS. Deployment credentials are read only from repository Actions secrets, with no credential values committed or logged. Live deployment remains blocked until COOLIFY_DEPLOY_WEBHOOK and COOLIFY_TOKEN are configured; no Coolify instance/application or credentials were available in this environment.
 
 Changing reduced-motion preferences mid-story now rebuilds the timeline from the original motion values and seeks immediately to the current progress. Returning to the hero restores the assembled scanner. Mobile explorer copy scrolls within a bounded lower panel, keeping expanded explanations clear of the fixed model/navigation on short screens. Unused legacy procedural parts and the superseded patient table are removed.
 
@@ -24,6 +26,8 @@ Scanner framing reserves space opposite story copy, fits exploded geometry and d
 
 ## Verified
 
+- Deployment workflow (2026-10-27 Asia/Jakarta): actionlint passed; nine isolated checks covered the deployment client success path, missing secrets, insecure/credential-bearing URLs, redirects, authentication failure, network failure, wrong target, and malformed responses. Lint and TypeScript passed again. Credential-pattern scan found no matching credential values in tracked text files and the workflow. Application build and browser QA passed earlier in this session; the workflow runs them again in GitHub. Remote workflow/deployment execution is not yet verified.
+
 - Audit corrections (2026-10-27 UTC): lint, TypeScript, production build, and expanded production Playwright QA passed at http://127.0.0.1:3002 with no captured console/request errors. Both directions of mid-story motion-preference switching restore the identical hero canvas. At 320×568, expanded explorer copy remains below navigation/model space and the last component is reachable. Inspected short-mobile and standard-mobile captures.
 
 - `npm run lint`, `npm run typecheck`, and `npm run build`: passed.
@@ -40,4 +44,4 @@ See [PRD.md](PRD.md), [DESIGN.md](DESIGN.md), [README.md](README.md), and [WORKL
 
 ## Next step
 
-All required checks passed. Physical touch devices and other browser engines remain the next verification gap.
+Configure COOLIFY_DEPLOY_WEBHOOK and COOLIFY_TOKEN in repository Actions secrets, identify the intended Coolify application, then verify its deployment and public URL. Physical touch devices and other browser engines remain unverified.

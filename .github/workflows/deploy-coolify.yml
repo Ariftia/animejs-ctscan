@@ -1,0 +1,97 @@
+name: CI and Coolify deployment
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Browser QA against production build
+        shell: bash
+        run: |
+          npm run start > "$RUNNER_TEMP/ctscan-next.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:3000/ > /dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:3000/ > /dev/null
+          node scripts/qa.mjs
+
+  deploy:
+    needs: verify
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions: {}
+    steps:
+      - name: Trigger Coolify deployment
+        env:
+          COOLIFY_DEPLOY_WEBHOOK: ${{ secrets.COOLIFY_DEPLOY_WEBHOOK }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+        shell: python
+        run: |
+          import json
+          import os
+          import sys
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+
+          webhook = os.environ.get("COOLIFY_DEPLOY_WEBHOOK", "")
+          token = os.environ.get("COOLIFY_TOKEN", "")
+          if not webhook or not token:
+              sys.exit("Configure COOLIFY_DEPLOY_WEBHOOK and COOLIFY_TOKEN in repository Actions secrets.")
+          target = urllib.parse.urlsplit(webhook)
+          if target.scheme != "https" or not target.hostname or target.username or target.password or target.fragment:
+              sys.exit("COOLIFY_DEPLOY_WEBHOOK must be an HTTPS URL without embedded credentials or a fragment.")
+
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  return None
+
+          request = urllib.request.Request(webhook, headers={"Authorization": "Bearer " + token})
+          try:
+              with urllib.request.build_opener(NoRedirect).open(request, timeout=30) as response:
+                  if response.status != 200:
+                      sys.exit("Unexpected Coolify response status: " + str(response.status))
+                  payload = json.load(response)
+                  if not any(item.get("deployment_uuid") for item in payload.get("deployments", [])):
+                      sys.exit("Coolify did not return an application deployment. Check the webhook target.")
+          except urllib.error.HTTPError as error:
+              sys.exit("Coolify rejected the deployment request (HTTP " + str(error.code) + ").")
+          except (urllib.error.URLError, TimeoutError):
+              sys.exit("Coolify request failed; inspect Deployments before retrying to avoid duplicate requests.")
+          except (ValueError, AttributeError, TypeError):
+              sys.exit("Unexpected Coolify response; inspect Deployments before retrying.")
+          print("Coolify accepted the deployment request. Confirm completion in the application's Deployments page.")

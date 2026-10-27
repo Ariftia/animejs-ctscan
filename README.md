@@ -25,3 +25,18 @@ For visual changes, inspect forward/reverse scrolling, resizing, mobile layout, 
 - [Exterior asset provenance](public/reference/ct-product-references.md)
 
 The scanner and anatomy are educational illustrations, not dimensionally accurate clinical devices or diagnostic images. Browser support beyond the tested Chromium environment is not established.
+
+## GitHub Actions and Coolify
+
+`.github/workflows/deploy-coolify.yml` runs lint, TypeScript, a production build, and Playwright QA for pull requests and pushes to `main`. Successful pushes to `main` trigger Coolify; the workflow can also be run manually on `main`. Pull requests never receive deployment credentials.
+
+Configure these **repository Actions secrets**, never files in this public repository:
+
+- `COOLIFY_DEPLOY_WEBHOOK`: the application's HTTPS **Webhooks → Deploy Webhook (auth required)** URL.
+- `COOLIFY_TOKEN`: an API token for the application's Coolify team, preferably restricted to deployment permission.
+
+From an authenticated local terminal, `gh secret set COOLIFY_DEPLOY_WEBHOOK` and `gh secret set COOLIFY_TOKEN` prompt for their values without putting them in command history. Enable Coolify API access and ensure the instance is reachable from GitHub-hosted runners. The application must use this repository's `main` branch, Nixpacks, `npm run build`, `npm run start`, and port 3000. Disable Coolify's separate deploy-on-push trigger if deployments should wait for these CI checks.
+
+The workflow uses GitHub's secret store, sends the token only in an HTTPS Authorization header, refuses redirects, and does not log the webhook or response body. A missing secret fails the deployment job with a setup message. An accepted request means deployment was triggered; confirm the resulting deployment finishes and the public application works in Coolify. If a request times out, inspect deployment state before retrying.
+
+Setup follows [Coolify's deploy webhook documentation](https://coolify.io/docs/core/automation/deploy-webhooks). The target instance, application, and credentials still need to be configured; they are intentionally absent from the source tree.

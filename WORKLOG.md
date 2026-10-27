@@ -92,3 +92,13 @@
 - Verification: npm run lint, npm run typecheck, npm run build, and QA_BASE_URL=http://127.0.0.1:3002 node scripts/qa.mjs passed against the production build, with no captured console/request errors. Existing forward/reverse scroll, resize, selection, keyboard, and reduced-motion checks also passed. Inspected 320×568 and 390×844 explorer captures.
 - Documentation: Updated README, DESIGN, and STATE. Preserved the pre-existing TypeScript cache contents, recording scripts, and videos outside this task.
 - Limits: Browser plugin unavailable; used repository Playwright with headless Chromium. Physical touch devices and other browser engines remain unverified. No push or deployment.
+
+## 2026-10-27 (Asia/Jakarta) — GitHub Actions deployment to Coolify
+
+- Model: Not available.
+- Request: Commit/push the fixes and set up automatic Coolify deployment, keeping secrets out of the public repository.
+- Workflow: Verify pull requests and main pushes using npm ci, lint, TypeScript, production build, and production Playwright QA on Node 22. Only successful main pushes/manual main runs can trigger the authenticated Coolify webhook. Official checkout/setup-node actions are pinned to resolved commit hashes; checkout does not persist credentials.
+- Credentials: COOLIFY_DEPLOY_WEBHOOK and COOLIFY_TOKEN are repository Actions secrets. The deploy job has no repository permissions or checkout. HTTPS is required, embedded URL credentials and redirects are refused, and response bodies/credentials are not logged. A deployment UUID must be returned. Missing secrets fail explicitly; uncertain network outcomes require inspecting Coolify before retrying. Ignore local .env files.
+- Verification: actionlint, lint, TypeScript, nine isolated deployment-client cases, and a credential-pattern scan passed. Existing application production build and complete Playwright suite passed earlier in the same session with the same application source. GitHub authentication and remote main were verified; no existing repository Actions secrets, variables, environments, or webhooks were found.
+- Blocker: No configured Coolify CLI, connector, instance/application identity, or API credentials are available. Requested secure configuration of the two Actions secrets; live deployment is not verified. README documents setup, the application branch/build/start/port settings, disabling duplicate deploy-on-push triggers when CI should gate deployment, and post-trigger verification.
+- Scope: Preserve the existing TypeScript cache change, recording scripts, and videos. No credentials or generated assets are included in the task commit.
