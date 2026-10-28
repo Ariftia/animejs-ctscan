@@ -1,12 +1,12 @@
 # Inside a CT scanner — Design
 
-Updated: 2026-10-27 (UTC). Requirements: [PRD.md](PRD.md).
+Updated: 2026-10-28 (Asia/Jakarta). Requirements: [PRD.md](PRD.md).
 
 ## Observed system
 
 The root route renders `CTExperience`: one persistent React Three Fiber canvas behind DOM story panels and fixed navigation. `ExperienceContext` owns normalized scroll progress, scene identity, selection, and mutable motion values. Anime.js seeks the timeline from progress; Three.js refs update geometry and camera without per-frame React state.
 
-`components/animation/ranges.ts` defines scene boundaries. `CTCamera` owns framing and explorer orbit controls; `CTScanner` composes exterior, internals, patient, and diagrams. `components/scanner/config.ts` normalizes imported assets. Native exterior geometry has provenance documented under `public/reference/`.
+`components/animation/ranges.ts` defines scene boundaries. `CTCamera` owns framing and explorer orbit controls; `CTScanner` composes exterior, internals, patient, and diagrams. `components/scanner/config.ts` defines the explorer component copy. The `/lab` route loads five GLB previews through `FloraModel`; reconstruction generates slices from the shared phantom rather than a GLB asset. Native exterior geometry has provenance documented under `public/reference/`.
 
 ## Incumbent visual identity
 

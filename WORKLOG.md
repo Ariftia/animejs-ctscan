@@ -125,3 +125,13 @@
 - Change: Group ignore rules for dependencies, build/cache output, test reports, local credentials/deployment metadata, logs, recording experiments, and OS metadata. Preserve .env.example and tracked application assets.
 - Verification: Checked 22 artifact paths are ignored and seven source/example paths remain eligible; git ls-files reports no tracked ignored files or TypeScript cache files. Diff whitespace checks passed. Application source is unchanged; lint, TypeScript, production build, and complete Playwright QA passed in the preceding cleanup.
 - Scope: Local commit only. No files containing credentials were added, and local recordings remain preserved.
+
+## 2026-10-28 (Asia/Jakarta) — Unused asset/catalog and credential cleanup
+
+- Model: Not available.
+- Request: Clean up unused files/modules and look for sensitive credentials.
+- Change: Remove the unreferenced 2,331,576-byte ct-slice-stack.glb; reconstruction already generates slices from the shared phantom. Remove unused model/transform fields and their type declarations from the explorer component catalog. Preserve all five /lab models, visual references, and ignored local recordings.
+- Investigation: Used the indexed graph with coverage checks and source verification; ignored scripts/local was checked directly. A TypeScript AST import traversal from Next.js routes, configuration, and QA found no unreachable source modules. Direct dependencies were checked against imports, framework/configuration use, and type tooling; none identified as unused. All remaining GLBs have source references.
+- Credentials: Redacted pattern scan covered all 56 pre-cleanup tracked files, three additional local text files, and 192 reachable Git history blobs. No matches for private keys, common provider tokens, JWTs, literal credential assignments, or credential-bearing service URLs. No credential values were printed. No tracked files match ignore rules.
+- Verification: npm run lint, npm run typecheck, stricter TypeScript unused-local/parameter checks, npm run build, git diff --check, and QA_BASE_URL=http://127.0.0.1:3002 node scripts/qa.mjs passed. QA captured no browser errors and covered desktop/mobile, reverse scrolling, resizing, explorer selection/keyboard behavior, and reduced motion.
+- Limits: Pattern matching cannot rule out every secret format; unreachable Git objects and external secret stores were not inspected. Browser checks use headless Chromium. Deleting the unused asset reduces the current checkout by about 2.22 MiB; its prior Git history remains. Local commit only; no push or deployment.

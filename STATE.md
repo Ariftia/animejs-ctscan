@@ -1,11 +1,13 @@
 # Project state
 
-Updated: 2026-10-27 (Asia/Jakarta).
-Current task: Repository artifact cleanup.
+Updated: 2026-10-28 (Asia/Jakarta).
+Current task: Unused asset/catalog cleanup and credential inspection.
 
 ## Current behavior
 
-Generated TypeScript caches are no longer tracked. Ignore rules also cover build outputs, test reports, package-manager logs, local environment/key files, and OS metadata; checks confirm no tracked files match the ignore rules. Local recording experiments are preserved in ignored scripts/local/, and generated videos remain locally in ignored public/videos/. Application code and production assets are unchanged.
+Removed the unreferenced 2,331,576-byte ct-slice-stack.glb; reconstruction generates its slices from the shared phantom. The five GLB assets used by /lab and visual reference files remain. The explorer component catalog now contains only the IDs, labels, descriptions, and explanations it consumes. No unreachable source modules or unused direct dependencies were identified. Pattern scanning found no credential matches in the 56 pre-cleanup tracked files, three additional local text files, or 192 reachable Git history blobs. This is a pattern-based check, not proof that every secret format is absent; unreachable Git objects and external secret stores were not inspected.
+
+Generated TypeScript caches are no longer tracked. Ignore rules also cover build outputs, test reports, package-manager logs, local environment/key files, and OS metadata; checks confirm no tracked files match the ignore rules. Local recording experiments are preserved in ignored scripts/local/, and generated videos remain locally in ignored public/videos/.
 
 The GitHub Actions workflow verifies pull requests and pushes to main with lint, TypeScript, production build, and Playwright QA. After successful verification, main pushes or manual main runs call the Coolify application deployment webhook over HTTPS. Deployment credentials are read only from repository Actions secrets, with no credential values committed or logged. Live deployment is deferred at the user’s request and skips with a notice until COOLIFY_DEPLOY_WEBHOOK and COOLIFY_TOKEN are configured; no Coolify instance/application or credentials were available in this environment.
 
@@ -27,6 +29,8 @@ The bed assembly has been raised by 0.30 model units to align the pedestal floor
 Scanner framing reserves space opposite story copy, fits exploded geometry and data displays, and preserves the explorer framing on entry and adapts to resize. Responsive headings and metadata fit 320–1920px widths. Labels follow the model side; right-aligned body text shares the heading edge. Component rows have visible keyboard focus, expanded-state controls, and labelled explanation regions. Scene notifications follow centralized timeline ranges.
 
 ## Verified
+
+- Unused asset/catalog cleanup (2026-10-28 Asia/Jakarta): lint, TypeScript (also with noUnusedLocals/noUnusedParameters), production build, and QA_BASE_URL=http://127.0.0.1:3002 node scripts/qa.mjs passed with no captured browser errors. Source import traversal found no unreachable modules; all remaining GLBs have source references and no ignored files are tracked.
 
 - Artifact cleanup (2026-10-27 Asia/Jakarta): lint, TypeScript, production build, and production Playwright QA passed. Ignore checks cover the cache, local scripts, and videos. No captured browser errors.
 
