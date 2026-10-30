@@ -1,6 +1,6 @@
 # Inside a CT scanner — Design
 
-Updated: 2026-10-28 (Asia/Jakarta). Requirements: [PRD.md](PRD.md).
+Updated: 2026-10-30 (UTC). Requirements: [PRD.md](PRD.md).
 
 ## Observed system
 
@@ -59,3 +59,9 @@ Camera and orbit target interpolate using Three.js refs; no React updates run pe
 Timeline creation restores `createMotionState()` into the existing shared ref before building Anime.js tracks, then seeks to the current progress immediately. Switching reduced-motion preferences mid-story therefore preserves the original start/end states and reverse scrolling. The unused timeline ref, legacy procedural parts, and superseded patient table are removed.
 
 On mobile, explorer copy has a maximum height of `56svh - 64px` and scrolls internally when explanations expand. The fixed canvas and camera stay unchanged; the copy remains below the upper model lane and clear of navigation even at 320×568. Native scroll chaining allows returning to earlier story sections from the top of the copy panel.
+
+## Opening entrance
+
+CTExperience owns readiness; its container ref tracks the loading, ready, and complete entrance phases. A one-shot frame counter inside the canvas signals readiness after the complete scene has rendered its first frame; the canvas fallback also signals readiness. LoadingScreen stays visible until that signal rather than depending on asset progress alone, since the root scanner is generated geometry. The loader fades over 200ms. The canvas stage and hero copy share one 800ms CSS animation with a 160ms delay, descending 28px with exponential deceleration and fading in together. Later chapters have no entrance animation, and reverse scrolling does not replay it. The underlying camera and scroll timeline are unchanged.
+
+Reduced motion shows both immediately when ready. A noscript override hides the loader and exposes the story when JavaScript is disabled. Animation completion removes the entrance styles, preventing later motion-preference changes from replaying it. React state changes once at readiness; completion updates the container ref directly, and the entrance uses CSS transforms/opacity with no new assets or dependencies.

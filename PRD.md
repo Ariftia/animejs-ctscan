@@ -1,7 +1,7 @@
 # Inside a CT scanner — Requirements
 
-Updated: 2026-10-26 (Asia/Jakarta).
-Status: Add selected-part zoom and collapsible explanations to part 12.
+Updated: 2026-10-30 (UTC).
+Status: Synchronized opening entrance and component explorer.
 
 ## Purpose and scope
 
@@ -11,6 +11,7 @@ Preserve the educational narrative, paper/ink/teal identity, and manual explorer
 
 ## Acceptance
 
+- On opening, keep the loading screen until the scanner has rendered, then land the opening text and scanner together. Reduced motion skips the spatial entrance.
 - Scanner and story text have distinct visual space on desktop and mobile.
 - Long headings remain visible within the viewport.
 - Keep the story camera and scanner position steady throughout scrolling; retain only restrained explanatory movement. Canvas size stays fixed through explorer entry and manual orbit remains available in the explorer.

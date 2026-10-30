@@ -29,6 +29,20 @@ const baseUrl = process.env.QA_BASE_URL ?? "http://127.0.0.1:3000";
 const capture = (page, path) => page.screenshot({ path, animations: "disabled", timeout: 90000 });
 
 async function inspectPage(page, label) {
+  await page.addInitScript(() => {
+    window.openingAnimations = [];
+    document.addEventListener("animationstart", (event) => {
+      if (event.animationName !== "opening-land" || !event.target.matches(".canvas-stage")) return;
+      document.querySelectorAll(".canvas-stage, #hero .story-copy").forEach((target) => {
+        const animation = target.getAnimations()[0];
+        window.openingAnimations.push({
+          target: target.className,
+          start: animation.startTime,
+          duration: animation.effect.getTiming().duration,
+        });
+      });
+    });
+  });
   page.on("console", (message) => {
     const text = message.text();
     const headlessReadbackWarning = text.includes("GPU stall due to ReadPixels");
@@ -40,8 +54,17 @@ async function inspectPage(page, label) {
   page.on("requestfailed", (request) => errors.push(`${label}:request:${request.url()}:${request.failure()?.errorText}`));
   await page.goto(baseUrl, { waitUntil: "networkidle" });
   await page.waitForSelector("canvas", { timeout: 30000 });
-  await page.locator(".loader").waitFor({ state: "hidden", timeout: 30000 }).catch(() => {});
+  await page.locator(".loader").waitFor({ state: "hidden", timeout: 30000 });
   await page.waitForTimeout(2500);
+  assert.equal(await page.locator(".experience").getAttribute("data-opening"), "complete", "Opening must finish after the rendered scene is ready");
+  const entrance = await page.evaluate(() => window.openingAnimations);
+  if (await page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches)) {
+    assert.deepEqual(entrance, [], "Reduced motion must skip the spatial entrance");
+  } else {
+    assert.deepEqual(entrance.map(({ target }) => target).sort(), ["canvas-stage", "story-copy"], "Only the scanner and opening copy should land");
+    assert.equal(entrance[0].start, entrance[1].start, "Text and scanner must start together");
+    assert.equal(entrance[0].duration, entrance[1].duration, "Text and scanner must land together");
+  }
   return page.evaluate(() => ({
     title: document.title,
     textLength: document.body.innerText.trim().length,
@@ -104,6 +127,7 @@ if (fixedCamera) assert.equal(await desktop.locator("[data-camera]").textContent
 await desktop.evaluate(() => window.scrollTo(0, 0));
 await desktop.waitForTimeout(700);
 const reverseScene = await desktop.locator(".nav-status span").first().textContent();
+assert.equal(await desktop.evaluate(() => window.openingAnimations.length), 2, "Returning to the hero must not replay the opening");
 
 await desktop.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
 await desktop.waitForTimeout(1200);

@@ -1,13 +1,30 @@
 "use client";
 
-import { Canvas, events } from "@react-three/fiber";
+import { Canvas, events, useFrame } from "@react-three/fiber";
+import { useEffect, useRef } from "react";
 import { Environment, Lightformer } from "@react-three/drei";
 import { Object3D } from "three";
 import { CTScanner } from "./CTScanner";
 import { CTCamera } from "./CTCamera";
 import { useExperience } from "./ExperienceContext";
 
-export function CTCanvas() {
+type ReadyProps = { onReady: () => void };
+
+function SceneReady({ onReady }: ReadyProps) {
+  const frames = useRef(0);
+  useFrame(() => {
+    // Release the entrance only after the complete scene has rendered a frame.
+    if (++frames.current === 2) onReady();
+  });
+  return null;
+}
+
+function WebGLFallback({ onReady }: ReadyProps) {
+  useEffect(onReady, [onReady]);
+  return <div className="webgl-fallback">Interactive model unavailable. The full CT story remains below.</div>;
+}
+
+export function CTCanvas({ onReady }: ReadyProps) {
   const { selected, activeScene } = useExperience();
   return (
     <Canvas
@@ -26,7 +43,7 @@ export function CTCanvas() {
       camera={{ position: [4.8, 2.5, 7.8], fov: 36, near: 0.1, far: 100 }}
       dpr={[1, 1.5]}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
-      fallback={<div className="webgl-fallback">Interactive model unavailable. The full CT story remains below.</div>}
+      fallback={<WebGLFallback onReady={onReady} />}
     >
       <ambientLight intensity={0.35} />
       <directionalLight position={[4, 8, 5]} intensity={2.4} color="#ffffff" castShadow shadow-bias={-0.0001} />
@@ -58,6 +75,7 @@ export function CTCanvas() {
         <Lightformer position={[0, 3, -4]} rotation={[0, Math.PI, 0]} scale={[4, 2, 1]} intensity={2} />
       </Environment>
       <CTCamera />
+      <SceneReady onReady={onReady} />
     </Canvas>
   );
 }

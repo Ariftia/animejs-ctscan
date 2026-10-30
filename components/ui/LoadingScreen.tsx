@@ -2,12 +2,12 @@
 
 import { useProgress } from "@react-three/drei";
 
-export function LoadingScreen() {
-  const { active, progress, total } = useProgress();
-  const visible = active || (total > 0 && progress < 99.5);
-  const displayedProgress = total > 0 ? progress : 100;
+export function LoadingScreen({ ready }: { ready: boolean }) {
+  const { progress, total } = useProgress();
+  const visible = !ready;
+  const displayedProgress = ready ? 100 : total > 0 ? Math.min(progress, 95) : 0;
   return (
-    <div className={visible ? "loader active" : "loader"} aria-hidden={!visible}>
+    <div className={visible ? "loader active" : "loader"} role="status" aria-label="Initializing scanner" aria-hidden={!visible}>
       <div className="loader-mark">CT</div>
       <p>INITIALIZING SCANNER</p>
       <div className="loader-track"><span style={{ transform: `scaleX(${displayedProgress / 100})` }} /></div>

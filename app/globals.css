@@ -29,6 +29,20 @@ button, input { font: inherit; }
   height: 100svh;
 }
 
+.experience[data-opening="loading"] :is(.canvas-stage, #hero .story-copy) {
+  opacity: 0;
+}
+.experience[data-opening="ready"] :is(.canvas-stage, #hero .story-copy) {
+  animation: opening-land 800ms cubic-bezier(0.16, 1, 0.3, 1) 160ms both;
+}
+@keyframes opening-land {
+  from { opacity: 0; transform: translateY(-28px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes opening-still {
+  from, to { opacity: 1; transform: none; }
+}
+
 .navigation {
   position: fixed;
   z-index: 20;
@@ -154,9 +168,9 @@ button, input { font: inherit; }
   background: var(--paper);
   opacity: 0;
   visibility: hidden;
-  transition: opacity .7s ease, visibility .7s;
+  transition: opacity .2s ease, visibility .2s;
 }
-.loader.active { opacity: 1; visibility: visible; }
+.loader.active { opacity: 1; visibility: visible; transition: none; }
 .loader-mark { margin-bottom: 34px; font: 900 64px/.8 "Arial Narrow", sans-serif; letter-spacing: -.08em; }
 .loader p, .loader output { font: 500 9px/1 monospace; letter-spacing: .18em; }
 .loader-track { width: 210px; height: 2px; margin: 14px 0 10px; overflow: hidden; background: #d5d4ce; }
@@ -220,5 +234,6 @@ button, input { font: inherit; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .experience[data-opening="ready"] :is(.canvas-stage, #hero .story-copy) { animation-name: opening-still; animation-delay: 0ms; }
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }

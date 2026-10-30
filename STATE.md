@@ -1,9 +1,11 @@
 # Project state
 
-Updated: 2026-10-28 (Asia/Jakarta).
-Current task: Unused asset/catalog cleanup and credential inspection.
+Updated: 2026-10-30 (UTC).
+Current task: Synchronized opening animation.
 
 ## Current behavior
+
+The opening loader now waits for a rendered scanner frame, then the scanner and hero copy descend/fade into place together over 800ms. Reduced motion skips the movement; returning to the hero does not replay it. A JavaScript-disabled visit exposes the story without the loader. No assets or dependencies were added.
 
 Removed the unreferenced 2,331,576-byte ct-slice-stack.glb; reconstruction generates its slices from the shared phantom. The five GLB assets used by /lab and visual reference files remain. The explorer component catalog now contains only the IDs, labels, descriptions, and explanations it consumes. No unreachable source modules or unused direct dependencies were identified. Pattern scanning found no credential matches in the 56 pre-cleanup tracked files, three additional local text files, or 192 reachable Git history blobs. This is a pattern-based check, not proof that every secret format is absent; unreachable Git objects and external secret stores were not inspected.
 
@@ -29,6 +31,8 @@ The bed assembly has been raised by 0.30 model units to align the pedestal floor
 Scanner framing reserves space opposite story copy, fits exploded geometry and data displays, and preserves the explorer framing on entry and adapts to resize. Responsive headings and metadata fit 320–1920px widths. Labels follow the model side; right-aligned body text shares the heading edge. Component rows have visible keyboard focus, expanded-state controls, and labelled explanation regions. Scene notifications follow centralized timeline ranges.
 
 ## Verified
+
+- Opening animation (2026-10-30 UTC): lint, TypeScript, production build, and QA_BASE_URL=http://127.0.0.1:3002 node scripts/qa.mjs passed with no captured browser errors. Desktop/mobile entrances share start time and duration; reduced motion skips spatial movement. The entrance completes once and does not replay after scroll/motion-preference changes. Existing explorer, resize, and reverse-scroll checks passed.
 
 - Unused asset/catalog cleanup (2026-10-28 Asia/Jakarta): lint, TypeScript (also with noUnusedLocals/noUnusedParameters), production build, and QA_BASE_URL=http://127.0.0.1:3002 node scripts/qa.mjs passed with no captured browser errors. Source import traversal found no unreachable modules; all remaining GLBs have source references and no ignored files are tracked.
 
