@@ -29,7 +29,8 @@ button, input { font: inherit; }
   height: 100svh;
 }
 
-.experience[data-opening="loading"] :is(.canvas-stage, #hero .story-copy) {
+/* Keep WebGL paintable during startup; the opaque loader covers the scanner. */
+.experience[data-opening="loading"] #hero .story-copy {
   opacity: 0;
 }
 .experience[data-opening="ready"] :is(.canvas-stage, #hero .story-copy) {

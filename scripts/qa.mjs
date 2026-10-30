@@ -52,11 +52,49 @@ async function inspectPage(page, label) {
   });
   page.on("pageerror", (error) => errors.push(`${label}:pageerror:${error.message}`));
   page.on("requestfailed", (request) => errors.push(`${label}:request:${request.url()}:${request.failure()?.errorText}`));
-  await page.goto(baseUrl, { waitUntil: "networkidle" });
+  // Hold hydration so the initial loading surface is checked deterministically.
+  let releaseScripts;
+  const scriptsReady = new Promise((resolve) => { releaseScripts = resolve; });
+  const holdScript = async (route) => { await scriptsReady; await route.continue(); };
+  await page.route(/\/_next\/.*\.js(?:\?.*)?$/, holdScript);
+  const navigation = page.goto(baseUrl, { waitUntil: "networkidle" });
+  try {
+    await page.waitForFunction(() => {
+      const loader = document.querySelector(".loader.active");
+      return loader && getComputedStyle(loader).position === "fixed";
+    });
+    assert.equal(await page.locator(".canvas-stage").evaluate((node) => getComputedStyle(node).opacity), "1", "WebGL must initialize on a visible surface behind the opaque loader");
+  } finally {
+    releaseScripts();
+    await navigation;
+    await page.unroute(/\/_next\/.*\.js(?:\?.*)?$/, holdScript);
+  }
   await page.waitForSelector("canvas", { timeout: 30000 });
   await page.locator(".loader").waitFor({ state: "hidden", timeout: 30000 });
   await page.waitForTimeout(2500);
   assert.equal(await page.locator(".experience").getAttribute("data-opening"), "complete", "Opening must finish after the rendered scene is ready");
+  const initialImage = (await page.locator("canvas").screenshot()).toString("base64");
+  const scannerPixels = await page.evaluate(async (base64) => {
+    const image = new Image();
+    image.src = `data:image/png;base64,${base64}`;
+    await image.decode();
+    const surface = document.createElement("canvas");
+    surface.width = image.width;
+    surface.height = image.height;
+    const context = surface.getContext("2d");
+    context.drawImage(image, 0, 0);
+    const { data } = context.getImageData(0, 0, surface.width, surface.height);
+    let tealPixels = 0;
+    const mobile = innerWidth <= 800;
+    for (let y = 0; y < surface.height * (mobile ? 0.5 : 1); y++) {
+      for (let x = mobile ? 0 : Math.floor(surface.width / 2); x < surface.width; x++) {
+        const pixel = (y * surface.width + x) * 4;
+        if (data[pixel + 1] - data[pixel] > 15 && data[pixel + 2] - data[pixel] > 15) tealPixels++;
+      }
+    }
+    return tealPixels;
+  }, initialImage);
+  assert.ok(scannerPixels > 100, `${label}: the scanner must be drawn before any click, scroll, or pointer input`);
   const entrance = await page.evaluate(() => window.openingAnimations);
   if (await page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches)) {
     assert.deepEqual(entrance, [], "Reduced motion must skip the spatial entrance");
