@@ -27,6 +27,8 @@ button, input { font: inherit; }
   z-index: 0;
   width: 100vw;
   height: 100svh;
+  /* Keep the WebGL layer composited when the opening animation is removed. */
+  will-change: transform, opacity;
 }
 
 /* Keep WebGL paintable during startup; the opaque loader covers the scanner. */

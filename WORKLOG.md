@@ -154,3 +154,12 @@
 - Verification: npm run lint, npm run typecheck, npm run build, git diff --check, and QA_BASE_URL=http://127.0.0.1:3002 node scripts/qa.mjs passed. Checks covered no-input startup at 1440×900, 390×844, 320×568, and reduced-motion 1280×720, plus existing synchronized entrance, explorer selection/keyboard controls, resize, motion-preference changes, and forward/reverse scrolling. No captured console/request errors. Inspected desktop/mobile hero captures.
 - Documentation: Updated DESIGN, STATE, and README QA coverage.
 - Limits: The exact reported click-to-reveal symptom did not reproduce in local Chromium; the hidden initialization surface was confirmed and corrected. Browser plugin unavailable; used repository Playwright with headless Chromium outside the process sandbox. Other browser engines and physical devices remain unverified. No push or deployment.
+
+## 2026-10-30 (UTC) — Retain the opening canvas compositor layer
+
+- Model: Not available.
+- Request: The scanner still appears only after scrolling on ct-scan.byrakitara.web.id.
+- Investigation: Inspected the live URL and local build without pointer, click, or scroll input. Both rendered the scanner and completed the shared opening entrance in headless Chromium. The live page includes the entrance, so the issue is not simply an absent animation. The exact reported symptom remains unreproduced in this environment.
+- Change: Keep `will-change: transform, opacity` on the fixed canvas stage. Entrance completion removes animated opacity/transform styles; retaining the compositor layer avoids that layer teardown as a possible source of stale WebGL presentation until a subsequent scroll. This is a targeted mitigation, not a confirmed root-cause diagnosis. Shared entrance timing, reduced motion, camera, and scroll choreography remain unchanged. No assets or dependencies added.
+- Verification: Lint, TypeScript, production build, and diff whitespace checks passed. QA_BASE_URL=http://127.0.0.1:3004 node scripts/qa.mjs passed against the production build. It covered no-input initial scanner pixels and shared entrance timing, desktop/mobile/short-mobile layouts, reduced motion, reverse scrolling, resizing, and explorer interactions; no captured browser errors. Inspected desktop/mobile opening screenshots.
+- Limits: Browser plugin unavailable; used repository Playwright/headless Chromium. Reporting-device confirmation is outstanding. Local change only; no push or deployment.
